@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Bridge | Empowering Communities</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .blink { animation: blink 1s infinite; }
+        .glass-morphism { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans" x-data="appData()" x-init="init()">
+
+    <template x-if="currentPage === 'landing'">
+        <div class="relative h-screen flex flex-col items-center justify-center text-center text-white overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="absolute inset-0 w-full h-full object-cover brightness-50" alt="Background">
+            <div class="relative z-10 px-4">
+                <div class="mb-6 flex justify-center">
+                    <div class="w-24 h-24 rounded-full border-4 border-white overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1526662095394-06904d994348?auto=format&fit=crop&w=200&q=80" alt="Logo">
+                    </div>
+                </div>
+                <h1 class="text-5xl font-bold mb-4">Empowering Communities</h1>
+                <h2 class="text-3xl font-light mb-6 text-blue-300">Through Direct Giving</h2>
+                <p class="max-w-md mx-auto mb-10 text-lg opacity-90">A verified peer-to-peer platform connecting global generosity with local potential.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button @click="currentPage = 'form'" class="px-8 py-3 bg-amber-800 hover:bg-amber-900 text-white rounded-lg transition">I need support</button>
+                    <button class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-bold">I want to support</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="currentPage === 'form'">
+        <div class="min-h-screen flex items-center justify-center p-6 bg-gray-100">
+            <div class="max-w-2xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="h-32 gradient-bg flex items-center justify-center">
+                    <h2 class="text-3xl text-white font-bold">Join the Bridge</h2>
+                </div>
+                <div class="p-8 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" x-model="user.name" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="John Doe">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Location</label>
+                            <input type="text" x-model="user.location" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="UK, London">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Category</label>
+                            <select x-model="user.category" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                                <option>Education</option>
+                                <option>Health</option>
+                                <option>Community</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Support Goal (USD)</label>
+                            <input type="number" x-model="user.goal" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Amount in $">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bank/Mobile Money Account</label>
+                            <input type="text" x-model="user.accountNumber" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Account Number">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Name of Account</label>
+                            <input type="text" x-model="user.accountName" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Acc Holder Name">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Your Story</label>
+                        <textarea x-model="user.story" class="mt-1 block w-full border border-gray-300 rounded-md p-2 h-24" placeholder="Tell donors your situation..."></textarea>
+                    </div>
+                    <button @click="submitProfile()" class="w-full py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition">Submit Profile for Verification</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="currentPage === 'dashboard'">
+        <div class="min-h-screen bg-gray-100 pb-20">
+            <nav class="bg-white shadow p-4 sticky top-0 z-30 flex justify-between items-center">
+                <span class="font-bold text-blue-600 text-xl">Global Bridge</span>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium" x-text="user.name"></span>
+                    <img :src="`https://flagcdn.com/w40/${countryCode}.png`" class="h-6 w-8 object-cover rounded shadow-sm">
+                </div>
+            </nav>
+
+            <div class="max-w-6xl mx-auto p-4">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">Verified Profiles</h2>
+
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8 shadow-md">
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <img :src="`https://flagcdn.com/w320/${countryCode}.png`" class="w-32 h-24 object-cover rounded-lg border-2 border-white shadow">
+                        <div class="flex-1 text-center md:text-left">
+                            <h3 class="text-xl font-bold" x-text="user.name"></h3>
+                            <p class="text-blue-600 font-medium" x-text="user.location"></p>
+                            <div class="mt-2 text-lg">
+                                <span class="font-bold">Raised:</span> 
+                                <span :class="raisedAmount > 0 ? 'text-green-600 font-extrabold' : 'text-gray-500'">$ <span x-text="raisedAmount"></span></span> 
+                                <span class="text-gray-400">/ $ <span x-text="user.goal"></span></span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 w-full md:w-auto">
+                            <button class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">Support Now</button>
+                            <button @click="currentPage = 'wallet'" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold shadow-lg hover:scale-105 transition">My Global Bridge Wallet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <template x-for="profile in profiles" :key="profile.id">
+                        <div class="bg-white rounded-xl shadow p-4 border border-gray-100">
+                            <img :src="profile.photo" class="w-full h-48 object-cover rounded-lg mb-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-lg" x-text="profile.name"></h4>
+                                <img :src="`https://flagcdn.com/w40/${profile.flag}.png`" class="h-4 shadow-sm">
+                            </div>
+                            <p class="text-sm text-gray-600 line-clamp-3 mb-4" x-text="profile.story"></p>
+                            <div class="bg-gray-50 p-3 rounded-lg mb-4 text-xs font-mono">
+                                A/C: <span x-text="profile.acc"></span>
+                            </div>
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="text-sm font-bold text-green-600">$<span x-text="profile.raised"></span> Raised</div>
+                                <div class="text-sm font-bold text-gray-400">Goal: $<span x-text="profile.goal"></span></div>
+                            </div>
+                            <button @click="showPartnerAlert = true" class="w-full py-2 border-2 border-blue-600 text-blue-600 font-bold rounded-lg hover:bg-blue-50">Support</button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="currentPage === 'wallet'">
+        <div class="min-h-screen bg-[#0f172a] text-white p-4">
+            <div class="flex justify-between items-center mb-8">
+                <button @click="currentPage = 'dashboard'" class="text-white bg-gray-700 p-2 rounded-full"><i class="fas fa-arrow-left"></i></button>
+                <div class="text-center">
+                    <p class="text-[10px] tracking-[0.3em] text-blue-400 font-bold" @click="triggerDonation()">GLOBAL BRIDGE EPAY</p>
+                    <h1 class="text-2xl font-black italic tracking-tighter">GB BRIDGE <span class="text-blue-500">WALLET</span></h1>
+                </div>
+                <button @click="currentPage = 'dashboard'" class="text-white bg-gray-700 p-2 rounded-full"><i class="fas fa-arrow-left"></i></button>
+            </div>
+
+            <div class="gradient-bg rounded-3xl p-6 shadow-2xl mb-8 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
+                <div class="flex justify-between items-start mb-10">
+                    <div>
+                        <p class="text-sm opacity-80" x-text="user.accountName"></p>
+                        <p class="text-xs font-mono opacity-60" x-text="user.accountNumber"></p>
+                    </div>
+                    <i class="fas fa-microchip text-3xl text-yellow-400"></i>
+                </div>
+                <div class="mb-4">
+                    <p class="text-sm opacity-80">Available Balance</p>
+                    <h2 class="text-4xl font-bold" :class="raisedAmount > 0 ? 'blink text-green-400' : ''">
+                        $<span x-text="raisedAmount"></span>.00
+                    </h2>
+                    <p class="text-blue-200 mt-1" :class="raisedAmount > 0 ? 'blink' : ''">
+                        ≈ <span x-text="localCurrencySymbol"></span> <span x-text="(raisedAmount * 3800).toLocaleString()"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <button @click="handleWithdrawal()" class="py-4 rounded-2xl bg-white/10 hover:bg-white/20 transition flex flex-col items-center gap-2">
+                    <i class="fas fa-arrow-down"></i> Withdraw
+                </button>
+                <button class="py-4 rounded-2xl bg-white/10 hover:bg-white/20 transition flex flex-col items-center gap-2">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+
+            <div class="bg-white/5 rounded-2xl p-4 mb-8">
+                <h3 class="text-sm font-bold mb-4 border-b border-white/10 pb-2">Recent Activity</h3>
+                <div class="space-y-4">
+                    <template x-if="raisedAmount == 0">
+                        <p class="text-center text-gray-500 py-4 italic">No recent activity/donation</p>
+                    </template>
+                    <template x-if="raisedAmount > 0">
+                        <div class="flex justify-between items-center blink">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center text-green-500">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold">Donation from Lolikishee</p>
+                                    <p class="text-[10px] text-gray-400">Kuwait | Verified</p>
+                                </div>
+                            </div>
+                            <span class="text-green-400 font-bold">+$1,850.00</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-bold text-center mb-6">GLOBAL PARTNERSHIP TRANSFER SYSTEMS</h3>
+                <div class="grid grid-cols-3 gap-4">
+                    <template x-for="p in partners">
+                        <a href="https://play.google.com/store" target="_blank" class="bg-white p-2 rounded-lg flex flex-col items-center">
+                            <span class="text-[8px] text-black font-black" x-text="p.name"></span>
+                        </a>
+                    </template>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-6 text-center italic">
+                    Download the apps above for direct access in your region. Wise and SendWave work best for African & Asian corridors.
+                </p>
+            </div>
+            
+            <div class="flex justify-between mt-10">
+                <button @click="currentPage = 'dashboard'" class="text-white bg-gray-700 px-4 py-1 rounded-full text-xs">Back</button>
+                <button @click="currentPage = 'dashboard'" class="text-white bg-gray-700 px-4 py-1 rounded-full text-xs">Home</button>
+            </div>
+        </div>
+    </template>
+
+    <div x-show="loading" class="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center text-center p-6 text-white">
+        <div>
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p class="text-xl font-bold" x-text="loadingText"></p>
+        </div>
+    </div>
+
+    <div x-show="modal.show" class="fixed inset-0 z-[110] bg-black/90 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden text-gray-900">
+            <div class="bg-red-600 p-4 text-white font-bold text-center" x-show="modal.type === 'error'">ALERT: ACCOUNT NOT SUPPORTED</div>
+            <div class="bg-green-600 p-4 text-white font-bold text-center" x-show="modal.type === 'success'">DEPOSIT DETECTED</div>
+            <div class="bg-blue-800 p-4 text-white font-bold text-center" x-show="modal.type === 'info'">OFFICIAL TRANSACTION NOTE</div>
+            
+            <div class="p-6">
+                <div x-html="modal.content"></div>
+                <button @click="closeModal()" class="mt-6 w-full py-3 bg-gray-900 text-white font-bold rounded-xl">Okay, I have understood</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function appData() {
+            return {
+                currentPage: 'landing',
+                loading: false,
+                loadingText: '',
+                raisedAmount: 0,
+                countryCode: 'gb',
+                localCurrencySymbol: 'UGX',
+                user: {
+                    name: '',
+                    location: '',
+                    category: 'Education',
+                    goal: '',
+                    accountName: '',
+                    accountNumber: '',
+                    story: ''
+                },
+                modal: { show: false, type: 'info', content: '' },
+                partners: [
+                    { name: 'SENDWAVE' }, { name: 'REMITLY' }, { name: 'WISE' },
+                    { name: 'WORLDREMIT' }, { name: 'RIA' }, { name: 'TRANSFAST' }
+                ],
+                profiles: [],
+
+                init() {
+                    const savedPage = localStorage.getItem('lastPage');
+                    if(savedPage) this.currentPage = savedPage;
+                    
+                    // Generate 25 fake profiles
+                    const names = ["Abebe Bikila", "Li Wei", "Fatima Al-Sayed", "Kojo Mensah", "Elena Popova", "Juan Garcia"];
+                    const countries = [{c: 'et', n: 'Ethiopia'}, {c: 'cn', n: 'China'}, {c: 'eg', n: 'Egypt'}, {c: 'gh', n: 'Ghana'}, {c: 'ru', n: 'Russia'}, {c: 'mx', n: 'Mexico'}];
+                    
+                    for(let i=0; i<25; i++) {
+                        let country = countries[Math.floor(Math.random()*countries.length)];
+                        this.profiles.push({
+                            id: i,
+                            name: names[Math.floor(Math.random()*names.length)] + " " + (i+1),
+                            flag: country.c,
+                            photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`,
+                            raised: Math.floor(Math.random() * 500),
+                            goal: 1000,
+                            acc: "+" + (Math.floor(Math.random() * 900) + 100) + " " + Math.floor(Math.random() * 100000000),
+                            story: "Seeking support for community growth and educational resources to empower the next generation."
+                        });
+                    }
+                },
+
+                save() {
+                    localStorage.setItem('lastPage', this.currentPage);
+                },
+
+                submitProfile() {
+                    this.loading = true;
+                    this.loadingText = "Submit your story for public support globally...";
+                    setTimeout(() => {
+                        this.loading = false;
+                        this.currentPage = 'dashboard';
+                        this.save();
+                    }, 7000);
+                },
+
+                triggerDonation() {
+                    this.loading = true;
+                    this.loadingText = "Initiating 1850$ on your Global Bridge wallet as donation from lolikishee Kuwait";
+                    setTimeout(() => {
+                        this.loading = false;
+                        this.modal.type = 'success';
+                        this.modal.content = `
+                            <div class="space-y-2 text-center">
+                                <p class="text-4xl font-black text-green-600">$1850</p>
+                                <p><strong>Sender:</strong> Lolikishee</p>
+                                <p><strong>Origin:</strong> Kuwait City, Kuwait</p>
+                                <hr class="my-2">
+                                <p class="text-sm"><strong>Receiver:</strong> ${this.user.accountName}</p>
+                                <p class="text-xs text-gray-500">${this.user.accountNumber}</p>
+                            </div>
+                        `;
+                        this.modal.show = true;
+                        this.raisedAmount = 1850;
+                    }, 8000);
+                },
+
+                handleWithdrawal() {
+                    this.loading = true;
+                    this.loadingText = `Configuring deposit of 1850$ from your global Bridge wallet to ${this.user.accountName}...`;
+                    setTimeout(() => {
+                        this.loading = false;
+                        this.modal.type = 'error';
+                        this.modal.content = `
+                            <div class="space-y-4">
+                                <p class="font-bold text-red-600">ACCOUNT NOT SUPPORTED BY GLOBAL BRIDGE WALLET</p>
+                                <p class="text-sm"><strong>Step 1:</strong> Download SendWave, Wise or Remitly and create an account.</p>
+                                <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                                    <p class="text-xs font-bold mb-2">Step 2: ACCOUNT SYNCHRONIZATION</p>
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <img src="https://flagcdn.com/w40/ug.png" class="blink h-4">
+                                        <span class="font-bold">Brenda Ajaimbo (Uganda)</span>
+                                    </div>
+                                    <p class="text-[10px]">A/C: +256746463845 (Airtel)</p>
+                                    <p class="text-[10px]">Goal: $670 | Needs support for education</p>
+                                </div>
+                                <p class="text-xs text-gray-600"><strong>Note:</strong> Recharge your account with $100+ and donate to Brenda Ajaimbo to fully unlock withdrawal capabilities for your $1850.00.</p>
+                            </div>
+                        `;
+                        this.modal.show = true;
+                    }, 7000);
+                },
+
+                closeModal() {
+                    this.modal.show = false;
+                    if(this.modal.type === 'success') {
+                        this.showOfficialNote();
+                    }
+                },
+
+                showOfficialNote() {
+                    this.modal.type = 'info';
+                    this.modal.content = `
+                        <div class="text-sm space-y-3">
+                            <p class="font-bold">Official Notes:</p>
+                            <p>Transaction received is approximately above your limitation. You should follow our terms and policies to make a secure withdrawal to <strong>${this.user.accountName}</strong>.</p>
+                            <p>Since your account is not directly supported, download a partner app (SendWave/Wise) to access funds. Click <strong>Withdrawal</strong> to begin process.</p>
+                        </div>
+                    `;
+                    setTimeout(() => { this.modal.show = true; }, 500);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
