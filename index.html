@@ -6,19 +6,38 @@
     <title>Global Bridge Support</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Utility styles for the animations and UI effects */
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .blinking { animation: blink 1s linear infinite; }
         .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+        
+        /* Matching the landing page gradient and background from image_0.png */
+        .landing-bg {
+            background-image: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 100%), url('https://image.shutterstock.com/image-photo/group-joyful-poor-indian-children-260nw-1051512401.jpg'); /* Representative Image of Smiling Children */
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Styling the brown border button from image_0.png */
+        .btn-need-support {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(93, 64, 55, 0.3); /* Transparent Brown */
+        }
+        
+        /* Modal and dropdown scrolling */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .country-modal { max-height: 80vh; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+<body class="bg-gray-100 font-sans leading-normal tracking-normal overflow-x-hidden">
 
     <div id="app-container">
         </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/index.js"></script>
+
     <script>
-        // --- DATA & CONFIG ---
+        // --- DATA & CONFIG (Retained from your previous requirement) ---
         const PARTNERS = [
             { name: "Sendwave", icon: "📱", region: "Africa & SE Asia", countries: "Uganda, Kenya, Nigeria", link: "https://play.google.com/store/apps/details?id=com.sendwave", desc: "Instant Mobile Money transfers with 0 fees." },
             { name: "Remitly", icon: "⚡", region: "Asia & LatAm", countries: "Philippines, India, Mexico", link: "https://play.google.com/store/apps/details?id=com.remitly.app", desc: "Reliable bank deposits and cash pickups." },
@@ -35,7 +54,9 @@
             walletBalance: 0,
             raised: 0,
             hasDonation: false,
-            profiles: []
+            profiles: [],
+            selectedCountry: null,
+            searchTerm: ''
         };
 
         function saveState() {
@@ -52,41 +73,61 @@
         function render() {
             const container = document.getElementById('app-container');
             
+            // 1. Updated Landing Page (Exact match for image_0.png)
             if (state.currentPage === 'landing') {
                 container.innerHTML = `
-                    <div class="h-screen flex flex-col items-center justify-center text-center p-6 gradient-bg text-white">
-                        <h1 class="text-5xl font-bold mb-4">GLOBAL BRIDGE</h1>
-                        <p class="text-xl mb-8 opacity-90">Connecting hearts, bridging needs globally.</p>
-                        <button onclick="navigate('login')" class="bg-white text-blue-700 px-10 py-4 rounded-full font-bold text-lg shadow-xl hover:bg-gray-100 transition">Get Started</button>
+                    <div class="h-screen landing-bg text-center flex flex-col justify-between">
+                        <header class="flex justify-between items-center px-6 py-3 border-b border-white/10 bg-black/30">
+                            <div class="flex items-center gap-2">
+                                <div class="bg-blue-600 w-7 h-7 rounded flex items-center justify-center font-bold text-white text-lg">G</div>
+                                <span class="font-bold text-white text-lg">Global Bridge</span>
+                            </div>
+                            <span class="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Secure Verified Engine</span>
+                        </header>
+
+                        <div class="flex-1 flex flex-col items-center justify-center p-6 text-white max-w-lg mx-auto">
+                            <img src="https://image.shutterstock.com/image-photo/group-joyful-poor-indian-children-260nw-1051512401.jpg" class="w-24 h-24 rounded-full border-4 border-blue-600/60 shadow-xl mb-6 object-cover">
+                            
+                            <h1 class="text-4xl font-bold mb-1 leading-tight">Empowering Communities</h1>
+                            <h2 class="text-3xl font-extrabold text-blue-400 mb-4 leading-tight">Through Direct Giving</h2>
+                            
+                            <p class="text-xs text-gray-200 mb-8 max-w-sm">A verified peer-to-peer platform connecting global generosity with local potential.</p>
+                            
+                            <div class="flex gap-4 w-full">
+                                <button onclick="navigate('login')" class="flex-1 btn-need-support text-white py-3 rounded-lg font-semibold text-xs transition hover:bg-brown-600/50">I need support</button>
+                                <button onclick="navigate('dashboard')" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold text-xs transition hover:bg-blue-700">I want to support</button>
+                            </div>
+                        </div>
                     </div>`;
             } 
             
+            // 2. Updated Login Page (With Country Search Button)
             else if (state.currentPage === 'login') {
                 container.innerHTML = `
                     <div class="min-h-screen p-6 bg-gray-50">
                         <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
                             <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Submit Profile</h2>
                             <form onsubmit="handleLogin(event)" class="space-y-4">
-                                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border rounded-lg">
-                                <select id="country" class="w-full p-3 border rounded-lg">
-                                    <option value="Uganda">Uganda 🇺🇬</option>
-                                    <option value="Kenya">Kenya 🇰🇪</option>
-                                    <option value="USA">USA 🇺🇸</option>
-                                    <option value="UK">UK 🇬🇧</option>
-                                    <option value="Kuwait">Kuwait 🇰🇼</option>
-                                </select>
-                                <input type="text" id="location" placeholder="City/Location" required class="w-full p-3 border rounded-lg">
-                                <input type="text" id="category" placeholder="Category (e.g. Education, Health)" required class="w-full p-3 border rounded-lg">
-                                <input type="number" id="goal" placeholder="Support Goal Amount ($)" required class="w-full p-3 border rounded-lg">
-                                <input type="text" id="accName" placeholder="Account Name" required class="w-full p-3 border rounded-lg">
-                                <input type="text" id="accNum" placeholder="Bank/Mobile Money Number" required class="w-full p-3 border rounded-lg">
-                                <textarea id="story" placeholder="Your story why you need support..." required class="w-full p-3 border rounded-lg h-24"></textarea>
-                                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700">SUBMIT PROFILE FOR VERIFICATION</button>
+                                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border rounded-lg text-sm">
+                                
+                                <button type="button" onclick="openCountryModal()" id="countryButton" class="w-full p-3 border rounded-lg text-sm text-gray-600 text-left flex justify-between items-center">
+                                    <span id="selectedCountryLabel">Select Your Country (choose yours)</span>
+                                    <span>▼</span>
+                                </button>
+                                
+                                <input type="text" id="location" placeholder="City/Location" required class="w-full p-3 border rounded-lg text-sm">
+                                <input type="text" id="category" placeholder="Category (e.g. Education, Health)" required class="w-full p-3 border rounded-lg text-sm">
+                                <input type="number" id="goal" placeholder="Support Goal Amount ($)" required class="w-full p-3 border rounded-lg text-sm">
+                                <input type="text" id="accName" placeholder="Account Name" required class="w-full p-3 border rounded-lg text-sm">
+                                <input type="text" id="accNum" placeholder="Bank/Mobile Money Number" required class="w-full p-3 border rounded-lg text-sm">
+                                <textarea id="story" placeholder="Your story why you need support..." required class="w-full p-3 border rounded-lg h-24 text-sm"></textarea>
+                                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-sm hover:bg-blue-700">SUBMIT PROFILE FOR VERIFICATION</button>
                             </form>
                         </div>
                     </div>`;
             }
 
+            // 3. Dashboard Page (Retained)
             else if (state.currentPage === 'dashboard') {
                 container.innerHTML = `
                     <div class="min-h-screen bg-gray-100 pb-20">
@@ -143,6 +184,7 @@
                     </div>`;
             }
 
+            // 4. Wallet Page (Retained)
             else if (state.currentPage === 'wallet') {
                 container.innerHTML = `
                     <div class="min-h-screen bg-blue-900 text-white p-4">
@@ -219,12 +261,97 @@
             }
         }
 
-        // --- LOGIC FUNCTIONS ---
+        // --- NEW GLOBAL COUNTRY LOGIC ---
+        
+        function openCountryModal() {
+            // Close any existing modal first
+            const existing = document.getElementById('countrySelectModal');
+            if (existing) document.body.removeChild(existing);
+
+            state.searchTerm = ''; // Reset search
+
+            const modal = document.createElement('div');
+            modal.id = 'countrySelectModal';
+            modal.className = "fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4";
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-pop-in flex flex-col country-modal">
+                    <div class="p-4 border-b">
+                        <input type="text" id="countrySearch" placeholder="Search countries..." class="w-full p-3 border rounded-lg text-sm mb-2 focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                        <div class="text-[10px] text-gray-400 font-medium uppercase tracking-widest text-center mt-1">Select your Country</div>
+                    </div>
+                    
+                    <div id="countryList" class="flex-1 overflow-y-auto no-scrollbar p-2">
+                        </div>
+
+                    <div class="p-2 border-t text-center">
+                        <button onclick="closeCountryModal()" class="text-sm font-semibold text-gray-500 py-2">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Populate initially
+            renderCountryList();
+
+            // Set up search listener
+            document.getElementById('countrySearch').addEventListener('input', (e) => {
+                state.searchTerm = e.target.value.toLowerCase();
+                renderCountryList();
+            });
+        }
+
+        function closeCountryModal() {
+            const modal = document.getElementById('countrySelectModal');
+            if (modal) document.body.removeChild(modal);
+        }
+
+        function selectCountry(country) {
+            state.selectedCountry = country;
+            closeCountryModal();
+            // Update the main login form button label
+            document.getElementById('selectedCountryLabel').innerHTML = `
+                ${country.emoji} ${country.name}
+            `;
+            document.getElementById('selectedCountryLabel').classList.remove('text-gray-600');
+            document.getElementById('selectedCountryLabel').classList.add('text-black');
+            saveState();
+        }
+
+        function renderCountryList() {
+            const list = document.getElementById('countryList');
+            
+            // Filter the global country dataset based on search term
+            const filteredCountries = window.countryFlagEmojiData.filter(c => 
+                c.name.toLowerCase().includes(state.searchTerm)
+            );
+
+            if (filteredCountries.length === 0) {
+                list.innerHTML = `<p class="text-center text-gray-400 text-sm py-8">No countries found for "${state.searchTerm}"</p>`;
+                return;
+            }
+
+            list.innerHTML = filteredCountries.map(country => `
+                <button type="button" onclick='selectCountry(${JSON.stringify(country).replace(/'/g, "&apos;")})' class="w-full text-left p-3 hover:bg-blue-50 rounded-lg flex items-center gap-3 transition">
+                    <span class="text-3xl">${country.emoji}</span>
+                    <span class="text-sm font-medium text-gray-800 flex-1">${country.name}</span>
+                    ${state.selectedCountry?.code === country.code ? '<span class="text-blue-600 text-xl">✓</span>' : ''}
+                </button>
+            `).join('');
+        }
+
+        // --- RETAINED LOGIC FUNCTIONS ---
         function handleLogin(e) {
             e.preventDefault();
+
+            // Check if country was actually selected
+            if (!state.selectedCountry) {
+                alert("Please select your country first (view all countries in the world).");
+                return;
+            }
+
             state.user = {
                 fullName: document.getElementById('fullName').value,
-                country: document.getElementById('country').value,
+                country: state.selectedCountry.name, // Save the selected name
                 goal: document.getElementById('goal').value,
                 accNum: document.getElementById('accNum').value,
                 accName: document.getElementById('accName').value
@@ -277,7 +404,7 @@
         // --- HELPERS ---
         function showLoading(msg, time, callback) {
             const overlay = document.createElement('div');
-            overlay.className = "fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-6 text-center";
+            overlay.className = "fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-6 text-center";
             overlay.innerHTML = `
                 <div class="text-white">
                     <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -293,13 +420,13 @@
 
         function showNotification({title, body, onOk}) {
             const modal = document.createElement('div');
-            modal.className = "fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-6";
+            modal.className = "fixed inset-0 bg-black/60 flex items-center justify-center z-[200] p-6";
             modal.innerHTML = `
-                <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-bounce-in">
+                <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-pop-in">
                     <div class="p-6 text-center">
                         <h3 class="text-xl font-black text-blue-900 mb-4">${title}</h3>
                         <div class="text-gray-600 mb-6">${body}</div>
-                        <button id="notif-ok" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-blue-700">OKAY, I UNDERSTAND</button>
+                        <button id="notif-ok" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg text-sm hover:bg-blue-700">OKAY, I UNDERSTAND</button>
                     </div>
                 </div>
             `;
@@ -311,7 +438,8 @@
         }
 
         function generateProfiles() {
-            const countries = ["Kenya", "Nigeria", "Philippines", "India", "UK", "Ghana"];
+            // Simplified country mapping for profile generation, using names from the global data if available
+            const countries = ["Uganda", "Kenya", "United States", "India", "UK", "Nigeria"];
             const names = ["James O.", "Sarah L.", "Amara K.", "Juan P.", "Anita W.", "David B."];
             const stories = ["Needs medical support for surgery.", "Tuition fees for final year.", "Starting a small farming business.", "Relief after community flooding.", "Capital for a local grocery shop."];
             
@@ -329,9 +457,10 @@
             saveState();
         }
 
-        function getFlag(c) {
-            const flags = {"Uganda":"🇺🇬", "Kenya":"🇰🇪", "USA":"🇺🇸", "UK":"🇬🇧", "Kuwait":"🇰🇼", "Nigeria":"🇳🇬", "Philippines":"🇵🇭", "India":"🇮🇳", "Ghana":"🇬🇭"};
-            return flags[c] || "🏳️";
+        function getFlag(cName) {
+            // Retain old flag mapping for profile display, or map to new names
+            const flags = {"Uganda":"🇺🇬", "Kenya":"🇰🇪", "USA":"🇺🇸", "UK":"🇬🇧", "Kuwait":"🇰🇼", "Nigeria":"🇳🇬", "Philippines":"🇵🇭", "India":"🇮🇳", "Ghana":"🇬🇭", "United States":"🇺🇸"};
+            return flags[cName] || "🏳️";
         }
 
         function getLocalCurrency(usd, country) {
