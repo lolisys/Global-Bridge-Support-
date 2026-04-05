@@ -3,476 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Bridge Support</title>
+    <title>Global Bridge Support | Official Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Utility styles for the animations and UI effects */
+        [x-cloak] { display: none !important; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .blinking { animation: blink 1s linear infinite; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        
-        /* Matching the landing page gradient and background from image_0.png */
-        .landing-bg {
-            background-image: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 100%), url('https://image.shutterstock.com/image-photo/group-joyful-poor-indian-children-260nw-1051512401.jpg'); /* Representative Image of Smiling Children */
-            background-size: cover;
-            background-position: center;
-        }
-
-        /* Styling the brown border button from image_0.png */
-        .btn-need-support {
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background-color: rgba(93, 64, 55, 0.3); /* Transparent Brown */
-        }
-        
-        /* Modal and dropdown scrolling */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .country-modal { max-height: 80vh; }
+        .blink { animation: blink 1s linear infinite; }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .wallet-card { background: linear-gradient(110deg, #1e293b 0%, #334155 100%); }
     </style>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal overflow-x-hidden">
+<body class="bg-slate-50 font-sans text-slate-900" x-data="bridgeApp()" x-init="initApp()" x-cloak>
 
-    <div id="app-container">
+    <template x-if="loading.show">
+        <div class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900/95 text-white p-6 text-center">
+            <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-xl font-semibold mb-2" x-text="loading.title"></p>
+            <p class="text-slate-400 animate-pulse" x-text="loading.message"></p>
         </div>
+    </template>
 
-    <script src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/index.js"></script>
+    <template x-if="page === 'landing'">
+        <div class="min-h-screen flex flex-col items-center justify-center p-4">
+            <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+                <div class="gradient-bg p-8 text-white text-center">
+                    <h1 class="text-3xl font-bold tracking-tight">GLOBAL BRIDGE SUPPORT</h1>
+                    <p class="text-blue-300 mt-2">Connecting Global Hearts to Local Needs</p>
+                </div>
+                <form @submit.prevent="submitProfile" class="p-8 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" x-model="user.name" placeholder="Full Name" class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        <select x-model="user.country" class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
+                            <option value="">Select Country</option>
+                            <template x-for="c in countries" :key="c.name">
+                                <option :value="c.name" x-text="c.name"></option>
+                            </template>
+                        </select>
+                        <input type="text" x-model="user.category" placeholder="Category (e.g. Education)" class="w-full p-3 rounded-xl border border-slate-200" required>
+                        <input type="number" x-model="user.goal" placeholder="Support Goal Amount ($)" class="w-full p-3 rounded-xl border border-slate-200" required>
+                        <select x-model="user.accType" class="w-full p-3 rounded-xl border border-slate-200">
+                            <option value="Mobile Money">Mobile Money</option>
+                            <option value="Bank Account">Bank Account</option>
+                        </select>
+                        <input type="text" x-model="user.accNumber" placeholder="Account Number" class="w-full p-3 rounded-xl border border-slate-200" required>
+                        <input type="text" x-model="user.accName" placeholder="Name on Account" class="w-full p-3 rounded-xl border border-slate-200" required>
+                        <input type="text" x-model="user.accOrigin" placeholder="Country Origin of Account" class="w-full p-3 rounded-xl border border-slate-200" required>
+                    </div>
+                    <textarea x-model="user.story" placeholder="Your story: Why do you need support?" class="w-full p-3 rounded-xl border border-slate-200 h-32" required></textarea>
+                    <button type="submit" class="w-full gradient-bg text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all shadow-lg uppercase tracking-wider">
+                        Submit Profile for Verification
+                    </button>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="page === 'dashboard'">
+        <div class="min-h-screen pb-20">
+            <header class="gradient-bg text-white p-6 sticky top-0 z-40 shadow-xl">
+                <div class="max-w-5xl mx-auto flex justify-between items-center">
+                    <h2 class="text-xl font-bold uppercase tracking-tighter">Verified Profiles</h2>
+                    <button @click="openWallet" class="bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 border border-blue-400">
+                        <i class="fas fa-wallet"></i> My Wallet
+                    </button>
+                </div>
+            </header>
+
+            <main class="max-w-5xl mx-auto p-4 space-y-6">
+                <div class="bg-white border-2 border-blue-500 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-blue-500 text-white px-4 py-1 rounded-bl-xl text-xs font-bold">MY PROFILE</div>
+                    <div class="flex items-center gap-6">
+                        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-4xl shadow-inner border border-slate-200">
+                            <span x-text="getFlag(user.country)"></span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold text-slate-800" x-text="user.name"></h3>
+                            <p class="text-slate-500" x-text="user.country"></p>
+                            <div class="mt-2 flex items-center gap-4">
+                                <div class="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                                    Raised: $<span x-text="formatNum(user.raised)"></span> / $<span x-text="formatNum(user.goal)"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 grid grid-cols-2 gap-4">
+                        <button class="bg-slate-100 text-slate-700 py-3 rounded-xl font-bold">Support Now</button>
+                        <button @click="openWallet" class="gradient-bg text-white py-3 rounded-xl font-bold shadow-md">My Global Bridge Wallet</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <template x-for="p in profiles" :key="p.id">
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-start gap-4 mb-4">
+                                <img :src="p.photo" class="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md">
+                                <div>
+                                    <h4 class="font-bold text-slate-800" x-text="p.name"></h4>
+                                    <p class="text-xs text-slate-500"><span x-text="p.flag"></span> <span x-text="p.country"></span></p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-600 mb-4 line-clamp-3 italic" x-text="p.story"></p>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-xs font-bold">
+                                    <span class="text-blue-600">Raised: $<span x-text="p.raised"></span></span>
+                                    <span class="text-slate-400">Goal: $<span x-text="p.goal"></span></span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-blue-500 h-full" :style="`width: ${(p.raised/p.goal)*100}%`"></div>
+                                </div>
+                                <p class="text-[10px] font-mono text-slate-400">ACC: <span x-text="p.acc"></span></p>
+                            </div>
+                            <button @click="showSupportNotice(p)" class="w-full mt-4 border border-blue-100 text-blue-600 py-2 rounded-lg text-sm font-bold hover:bg-blue-50">Support</button>
+                        </div>
+                    </template>
+                </div>
+            </main>
+
+            <footer class="p-8 text-center">
+                <button @click="triggerHiddenDonation" class="text-slate-300 text-[10px] uppercase tracking-widest hover:text-blue-400 transition-colors">global Bridge support Epay</button>
+            </footer>
+        </div>
+    </template>
+
+    <template x-if="page === 'wallet'">
+        <div class="min-h-screen bg-slate-100 pb-20">
+            <div class="flex justify-between items-center p-4">
+                <button @click="page = 'dashboard'" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center text-slate-600"><i class="fas fa-arrow-left"></i></button>
+                <div class="text-center">
+                    <p class="text-[10px] font-bold text-slate-400 tracking-widest">GLOBAL BRIDGE EPAY</p>
+                    <h1 class="text-sm font-black tracking-tighter italic">GlobalBridge Wallet</h1>
+                </div>
+                <button @click="page = 'dashboard'" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center text-slate-600"><i class="fas fa-arrow-left"></i></button>
+            </div>
+
+            <div class="max-w-md mx-auto p-4 space-y-6">
+                <div class="wallet-card rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full"></div>
+                    <div class="flex justify-between items-start mb-10">
+                        <div>
+                            <p class="text-slate-400 text-xs uppercase font-bold tracking-widest mb-1">Available Balance</p>
+                            <h2 class="text-4xl font-bold flex items-baseline gap-2" :class="user.raised > 0 ? 'blink text-emerald-400' : ''">
+                                $<span x-text="formatNum(user.raised)"></span>
+                                <span class="text-lg opacity-50 font-normal">USD</span>
+                            </h2>
+                            <p class="text-slate-300 font-mono text-sm mt-1" :class="user.raised > 0 ? 'blink' : ''">
+                                ≈ <span x-text="getCurrencySymbol(user.country)"></span> <span x-text="formatLocal(user.raised)"></span>
+                            </p>
+                        </div>
+                        <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-md">
+                            <i class="fas fa-shield-halved text-blue-400"></i>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div class="space-y-1">
+                            <p class="text-[10px] text-slate-400 uppercase">Account Holder</p>
+                            <p class="text-sm font-bold" x-text="user.name"></p>
+                        </div>
+                        <div class="text-right space-y-1">
+                            <p class="text-[10px] text-slate-400 uppercase">Wallet ID</p>
+                            <p class="text-sm font-mono" x-text="user.accNumber"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button @click="withdrawAction" class="bg-white p-4 rounded-2xl shadow-sm flex flex-col items-center gap-2 border border-slate-200">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center"><i class="fas fa-paper-plane"></i></div>
+                        <span class="text-xs font-bold text-slate-600 uppercase">Send</span>
+                    </button>
+                    <button @click="withdrawAction" class="bg-white p-4 rounded-2xl shadow-sm flex flex-col items-center gap-2 border border-slate-200">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center"><i class="fas fa-download"></i></div>
+                        <span class="text-xs font-bold text-slate-600 uppercase">Withdrawal</span>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800">Recent Activity</h3>
+                        <span class="text-xs text-blue-600 font-bold">See All</span>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <template x-if="user.raised == 0">
+                            <p class="text-center text-slate-400 text-sm py-4 italic">No recent activity/donation</p>
+                        </template>
+                        <template x-if="user.raised > 0">
+                            <div class="flex items-center gap-4 blink">
+                                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><i class="fas fa-plus"></i></div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between">
+                                        <p class="font-bold text-slate-800">Donation Received</p>
+                                        <span class="text-emerald-600 font-black">+$1,850.00</span>
+                                    </div>
+                                    <p class="text-xs text-slate-500">From: Lolikishee (Kuwait)</p>
+                                    <span class="inline-block mt-1 bg-blue-100 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Verified</span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="bg-blue-900 rounded-2xl p-6 text-white shadow-lg space-y-3">
+                    <div class="flex items-center gap-3 text-blue-300">
+                        <i class="fas fa-circle-exclamation"></i>
+                        <h4 class="text-xs font-bold uppercase tracking-widest">Official Notes</h4>
+                    </div>
+                    <p class="text-xs leading-relaxed opacity-80">
+                        Transaction received is approximately above your limitation. You should follow our terms and policies to make a secure withdrawal to <strong x-text="user.accName"></strong> (<span x-text="user.accNumber"></span>). Since your account is not supported to our Global Bridge wallet, download one of our partnership digital wallets below which is perfectly supported in your global location and create an account. Click withdrawal to access your funds. Thank you.
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-center text-sm font-bold text-slate-800 px-4">Download partner wallets for your location area</h3>
+                    <div class="space-y-3">
+                        <template x-for="p in partners" :key="p.name">
+                            <a :href="p.link" target="_blank" class="block bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h5 class="font-black text-slate-800" x-text="p.name + ' ' + p.emoji"></h5>
+                                    <span class="text-[10px] bg-slate-100 px-2 py-1 rounded-lg font-bold text-slate-500 uppercase">Play Store</span>
+                                </div>
+                                <p class="text-xs text-blue-600 font-bold mb-1" x-text="p.best"></p>
+                                <p class="text-[11px] text-slate-500" x-text="p.why"></p>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="modal.show">
+        <div class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
+            <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 text-center">
+                <template x-if="modal.type === 'deposit'">
+                    <div>
+                        <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full mx-auto flex items-center justify-center text-3xl mb-4"><i class="fas fa-check-circle"></i></div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Deposit Detected</h2>
+                        <div class="bg-slate-50 p-4 rounded-2xl mb-6 text-sm text-slate-600 space-y-1">
+                            <p><strong>Amount:</strong> $1,850.00</p>
+                            <p><strong>Sender:</strong> Lolikishee</p>
+                            <p><strong>Country:</strong> Kuwait (Kuwait City)</p>
+                            <p><strong>Receiver:</strong> <span x-text="user.accName"></span></p>
+                        </div>
+                        <button @click="acceptDonation" class="w-full gradient-bg text-white py-4 rounded-2xl font-bold shadow-lg">Okay, I have understood</button>
+                    </div>
+                </template>
+
+                <template x-if="modal.type === 'withdrawal_error'">
+                    <div class="text-left">
+                        <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full mx-auto flex items-center justify-center text-2xl mb-4"><i class="fas fa-triangle-exclamation"></i></div>
+                        <h2 class="text-lg font-black text-slate-800 mb-4 text-center leading-tight uppercase">ACCOUNT NOT SUPPORTED BY GLOBAL BRIDGE WALLET</h2>
+                        
+                        <div class="space-y-4 text-xs text-slate-600 overflow-y-auto max-h-[60vh] pr-2">
+                            <div>
+                                <p class="font-bold text-slate-800 mb-1">Step 1: Partner Wallet</p>
+                                <p>Download one supportive digital wallet (Sendwave, Wise, etc) and create an account.</p>
+                            </div>
+                            <div class="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-r-xl">
+                                <p class="font-bold text-blue-900 mb-1">Step 2: Sync Account</p>
+                                <p>Since you received a transaction at your limit, you must support a verified profile with a minimum of $100.</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-2xl p-3 bg-slate-50">
+                                <p class="font-bold text-slate-800">Support Required For:</p>
+                                <p class="text-blue-600 font-bold text-sm">Brenda Ajaimbo</p>
+                                <p>Country: Uganda 🇺🇬</p>
+                                <p>Goal: $670 (Education)</p>
+                                <p class="font-mono text-blue-500">+256746463845</p>
+                            </div>
+                            <p class="italic font-semibold text-slate-800">Note: Recharge your registered account with $100+ to donate to Brenda Ajaimbo to fully access withdrawal to <span x-text="user.accName"></span>.</p>
+                        </div>
+                        <button @click="modal.show = false" class="w-full mt-6 bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg">Okay, I have understood</button>
+                    </div>
+                </template>
+
+                <template x-if="modal.type === 'support_notice'">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full mx-auto flex items-center justify-center text-2xl mb-4"><i class="fas fa-hand-holding-heart"></i></div>
+                        <h3 class="font-bold text-slate-800 mb-2">Support Profile</h3>
+                        <p class="text-xs text-slate-500 mb-6">Download one of our partnership transaction apps which is perfect in your location to support this project:</p>
+                        <div class="grid grid-cols-2 gap-2 text-[10px] font-bold mb-6">
+                            <span class="bg-slate-100 p-2 rounded-lg">Sendwave</span>
+                            <span class="bg-slate-100 p-2 rounded-lg">Remitly</span>
+                            <span class="bg-slate-100 p-2 rounded-lg">Wise</span>
+                            <span class="bg-slate-100 p-2 rounded-lg">WorldRemit</span>
+                        </div>
+                        <p class="text-xs font-mono text-blue-600 mb-6" x-text="'ACC: ' + modal.data.acc"></p>
+                        <button @click="modal.show = false" class="w-full gradient-bg text-white py-4 rounded-2xl font-bold">Close</button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
 
     <script>
-        // --- DATA & CONFIG (Retained from your previous requirement) ---
-        const PARTNERS = [
-            { name: "Sendwave", icon: "📱", region: "Africa & SE Asia", countries: "Uganda, Kenya, Nigeria", link: "https://play.google.com/store/apps/details?id=com.sendwave", desc: "Instant Mobile Money transfers with 0 fees." },
-            { name: "Remitly", icon: "⚡", region: "Asia & LatAm", countries: "Philippines, India, Mexico", link: "https://play.google.com/store/apps/details?id=com.remitly.app", desc: "Reliable bank deposits and cash pickups." },
-            { name: "Wise", icon: "🌍", region: "Europe & North America", countries: "UK, USA, Canada, Germany", link: "https://play.google.com/store/apps/details?id=com.transferwise.android", desc: "Real mid-market exchange rates for low fees." },
-            { name: "WorldRemit", icon: "🛰️", region: "Global Reach", countries: "Zimbabwe, Ethiopia, SA", link: "https://play.google.com/store/apps/details?id=com.worldremit.android", desc: "Send to 130+ countries via airtime or cash." },
-            { name: "RIA Money", icon: "🏦", region: "Americas & Europe", countries: "Mexico, Spain, Italy", link: "https://play.google.com/store/apps/details?id=com.riafinancial.moneytransfer", desc: "Massive network for cash pickups." },
-            { name: "Transfast", icon: "🧧", region: "Middle East & India", countries: "UAE, Qatar, Kuwait, India", link: "https://play.google.com/store/apps/details?id=com.transfast.app", desc: "Strongest for direct bank deposits in GCC." }
-        ];
+        function bridgeApp() {
+            return {
+                page: 'landing',
+                loading: { show: false, title: '', message: '' },
+                modal: { show: false, type: '', data: null },
+                user: {
+                    name: '', country: '', category: '', goal: 0, 
+                    accType: 'Mobile Money', accNumber: '', accName: '', 
+                    accOrigin: '', story: '', raised: 0
+                },
+                profiles: [],
+                countries: [
+                    { name: 'Uganda', flag: '🇺🇬', currency: 'UGX', rate: 3800 },
+                    { name: 'Kenya', flag: '🇰🇪', currency: 'KES', rate: 130 },
+                    { name: 'United States', flag: '🇺🇸', currency: 'USD', rate: 1 },
+                    { name: 'United Kingdom', flag: '🇬🇧', currency: 'GBP', rate: 0.79 },
+                    { name: 'Ghana', flag: '🇬🇭', currency: 'GHS', rate: 14 },
+                    { name: 'Nigeria', flag: '🇳🇬', currency: 'NGN', rate: 1500 },
+                    { name: 'Kuwait', flag: '🇰🇼', currency: 'KWD', rate: 0.31 }
+                ],
+                partners: [
+                    { name: 'Sendwave', emoji: '📱', best: 'Best for: Africa & SE Asia (Uganda, Kenya)', why: 'Instantly to Mobile Money with 0 fees.', link: 'https://play.google.com/store/search?q=sendwave' },
+                    { name: 'Remitly', emoji: '⚡', best: 'Best for: Asia & Latin America', why: 'Great for first-time user rates and cash pickup.', link: 'https://play.google.com/store/search?q=remitly' },
+                    { name: 'Wise', emoji: '🌍', best: 'Best for: Europe & North America', why: 'Real mid-market exchange rates.', link: 'https://play.google.com/store/search?q=wise' },
+                    { name: 'WorldRemit', emoji: '🛰️', best: 'Best for: Global Reach & Rural Areas', why: 'Works in 130+ countries for cash pickup.', link: 'https://play.google.com/store/search?q=worldremit' }
+                ],
 
-        // --- STATE MANAGEMENT ---
-        let state = JSON.parse(localStorage.getItem('gb_state')) || {
-            currentPage: 'landing',
-            user: null,
-            walletBalance: 0,
-            raised: 0,
-            hasDonation: false,
-            profiles: [],
-            selectedCountry: null,
-            searchTerm: ''
-        };
-
-        function saveState() {
-            localStorage.setItem('gb_state', JSON.stringify(state));
-        }
-
-        function navigate(page) {
-            state.currentPage = page;
-            saveState();
-            render();
-        }
-
-        // --- UI GENERATORS ---
-        function render() {
-            const container = document.getElementById('app-container');
-            
-            // 1. Updated Landing Page (Exact match for image_0.png)
-            if (state.currentPage === 'landing') {
-                container.innerHTML = `
-                    <div class="h-screen landing-bg text-center flex flex-col justify-between">
-                        <header class="flex justify-between items-center px-6 py-3 border-b border-white/10 bg-black/30">
-                            <div class="flex items-center gap-2">
-                                <div class="bg-blue-600 w-7 h-7 rounded flex items-center justify-center font-bold text-white text-lg">G</div>
-                                <span class="font-bold text-white text-lg">Global Bridge</span>
-                            </div>
-                            <span class="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Secure Verified Engine</span>
-                        </header>
-
-                        <div class="flex-1 flex flex-col items-center justify-center p-6 text-white max-w-lg mx-auto">
-                            <img src="https://image.shutterstock.com/image-photo/group-joyful-poor-indian-children-260nw-1051512401.jpg" class="w-24 h-24 rounded-full border-4 border-blue-600/60 shadow-xl mb-6 object-cover">
-                            
-                            <h1 class="text-4xl font-bold mb-1 leading-tight">Empowering Communities</h1>
-                            <h2 class="text-3xl font-extrabold text-blue-400 mb-4 leading-tight">Through Direct Giving</h2>
-                            
-                            <p class="text-xs text-gray-200 mb-8 max-w-sm">A verified peer-to-peer platform connecting global generosity with local potential.</p>
-                            
-                            <div class="flex gap-4 w-full">
-                                <button onclick="navigate('login')" class="flex-1 btn-need-support text-white py-3 rounded-lg font-semibold text-xs transition hover:bg-brown-600/50">I need support</button>
-                                <button onclick="navigate('dashboard')" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold text-xs transition hover:bg-blue-700">I want to support</button>
-                            </div>
-                        </div>
-                    </div>`;
-            } 
-            
-            // 2. Updated Login Page (With Country Search Button)
-            else if (state.currentPage === 'login') {
-                container.innerHTML = `
-                    <div class="min-h-screen p-6 bg-gray-50">
-                        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Submit Profile</h2>
-                            <form onsubmit="handleLogin(event)" class="space-y-4">
-                                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border rounded-lg text-sm">
-                                
-                                <button type="button" onclick="openCountryModal()" id="countryButton" class="w-full p-3 border rounded-lg text-sm text-gray-600 text-left flex justify-between items-center">
-                                    <span id="selectedCountryLabel">Select Your Country (choose yours)</span>
-                                    <span>▼</span>
-                                </button>
-                                
-                                <input type="text" id="location" placeholder="City/Location" required class="w-full p-3 border rounded-lg text-sm">
-                                <input type="text" id="category" placeholder="Category (e.g. Education, Health)" required class="w-full p-3 border rounded-lg text-sm">
-                                <input type="number" id="goal" placeholder="Support Goal Amount ($)" required class="w-full p-3 border rounded-lg text-sm">
-                                <input type="text" id="accName" placeholder="Account Name" required class="w-full p-3 border rounded-lg text-sm">
-                                <input type="text" id="accNum" placeholder="Bank/Mobile Money Number" required class="w-full p-3 border rounded-lg text-sm">
-                                <textarea id="story" placeholder="Your story why you need support..." required class="w-full p-3 border rounded-lg h-24 text-sm"></textarea>
-                                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-sm hover:bg-blue-700">SUBMIT PROFILE FOR VERIFICATION</button>
-                            </form>
-                        </div>
-                    </div>`;
-            }
-
-            // 3. Dashboard Page (Retained)
-            else if (state.currentPage === 'dashboard') {
-                container.innerHTML = `
-                    <div class="min-h-screen bg-gray-100 pb-20">
-                        <header class="bg-white shadow-sm p-4 sticky top-0 z-10 flex justify-between items-center">
-                            <h1 class="text-xl font-bold text-blue-800">Verified Profiles</h1>
-                            <button onclick="navigate('wallet')" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-bold text-sm">My Global Bridge Wallet</button>
-                        </header>
-                        
-                        <div class="p-4 space-y-4 max-w-2xl mx-auto">
-                            <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 shadow-md">
-                                <div class="flex items-center gap-4 mb-3">
-                                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-4xl shadow-inner">
-                                        ${getFlag(state.user.country)}
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-lg">${state.user.fullName} (You)</h3>
-                                        <p class="text-sm text-gray-600">${state.user.country} 📍</p>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <div class="flex justify-between text-xs font-bold mb-1">
-                                        <span>Raised: $${state.raised}</span>
-                                        <span>Goal: $${state.user.goal}</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-                                        <div class="bg-green-500 h-full" style="width: ${(state.raised/state.user.goal)*100}%"></div>
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button onclick="triggerEpay()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-bold">Support Now</button>
-                                    <button onclick="navigate('wallet')" class="flex-1 bg-white border border-blue-600 text-blue-600 py-2 rounded-lg text-sm font-bold">My Wallet</button>
-                                </div>
-                            </div>
-
-                            ${state.profiles.map(p => `
-                                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                                    <div class="flex items-center gap-4 mb-3">
-                                        <img src="https://i.pravatar.cc/150?u=${p.name}" class="w-14 h-14 rounded-full bg-gray-200">
-                                        <div>
-                                            <h3 class="font-bold text-gray-800">${p.name}</h3>
-                                            <p class="text-xs text-gray-500">${p.country} ${getFlag(p.country)}</p>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-gray-600 mb-3 italic">"${p.story}"</p>
-                                    <p class="text-xs font-mono text-gray-400 mb-2">Acc: ${p.acc}</p>
-                                    <div class="flex justify-between text-xs font-bold mb-1">
-                                        <span>Raised: $${p.raised}</span>
-                                        <span>Goal: $${p.goal}</span>
-                                    </div>
-                                    <button onclick="alert('Download partner app to support: ' + '${p.acc}')" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-bold hover:bg-gray-200">Support Project</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>`;
-            }
-
-            // 4. Wallet Page (Retained)
-            else if (state.currentPage === 'wallet') {
-                container.innerHTML = `
-                    <div class="min-h-screen bg-blue-900 text-white p-4">
-                        <div class="flex justify-between items-center mb-6">
-                            <span class="text-xs tracking-widest font-black opacity-70">GLOBAL BRIDGE EPAY</span>
-                            <button onclick="navigate('dashboard')" class="bg-white/10 p-2 rounded-lg text-xs">BACK</button>
-                        </div>
-
-                        <div class="text-center mb-8">
-                            <h1 class="text-2xl font-bold tracking-tighter mb-1">GLOBAL<span class="text-blue-400">BRIDGE</span> WALLET</h1>
-                            <p class="text-[10px] opacity-60">Official Digital Asset Management</p>
-                        </div>
-
-                        <div class="bg-white/10 rounded-3xl p-6 border border-white/20 mb-6">
-                            <p class="text-xs opacity-70 mb-1">${state.user.fullName} | ${state.user.accNum}</p>
-                            <h2 class="text-sm font-bold mb-4">Available Balance</h2>
-                            <div class="flex flex-col gap-1 ${state.walletBalance > 0 ? 'blinking text-green-400' : ''}">
-                                <span class="text-4xl font-bold">$${state.walletBalance.toLocaleString()}</span>
-                                <span class="text-lg opacity-80">≈ ${getLocalCurrency(state.walletBalance, state.user.country)}</span>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-4 mb-8">
-                            <button onclick="triggerLimitError()" class="flex-1 bg-white text-blue-900 py-4 rounded-2xl font-bold shadow-lg">Withdrawal</button>
-                            <button onclick="triggerLimitError()" class="flex-1 bg-white/20 text-white py-4 rounded-2xl font-bold border border-white/30">Send</button>
-                        </div>
-
-                        <div class="bg-white rounded-t-3xl -mx-4 p-6 min-h-[400px] text-gray-800">
-                            <h3 class="font-bold border-b pb-2 mb-4">Recent Activity</h3>
-                            <div id="activity-list" class="space-y-4 mb-8">
-                                ${state.hasDonation ? `
-                                    <div class="flex justify-between items-center blinking">
-                                        <div>
-                                            <p class="font-bold text-sm">Donation Received <span class="text-xs bg-green-100 text-green-700 px-2 rounded">VERIFIED</span></p>
-                                            <p class="text-xs text-gray-500">From: Lolikishee (Kuwait 🇰🇼)</p>
-                                        </div>
-                                        <span class="font-bold text-green-600">+$1,850</span>
-                                    </div>
-                                ` : `<p class="text-center text-gray-400 text-sm py-4">No recent activity/donation</p>`}
-                            </div>
-
-                            ${state.hasDonation ? `
-                                <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-[11px] mb-8 leading-relaxed">
-                                    <p class="font-bold text-amber-800 mb-1 uppercase">Official Security Note:</p>
-                                    Transaction received is approximately above your limitation. Follow policies to secure withdrawal to ${state.user.accName} (${state.user.accNum}). Download a partner wallet below to sync and access funds.
-                                </div>
-                            ` : ''}
-
-                            <div class="text-center mb-6">
-                                <h4 class="font-bold text-sm mb-1 uppercase">Partner Digital Wallets</h4>
-                                <p class="text-[10px] text-gray-500 px-4">Download the best money transfer app for your location to access your registered account.</p>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-3">
-                                ${PARTNERS.map(app => `
-                                    <a href="${app.link}" target="_blank" class="flex items-center gap-4 p-3 border rounded-xl hover:bg-gray-50 transition">
-                                        <span class="text-2xl">${app.icon}</span>
-                                        <div class="flex-1">
-                                            <div class="flex justify-between">
-                                                <p class="font-bold text-sm">${app.name}</p>
-                                                <span class="text-[9px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">${app.region}</span>
-                                            </div>
-                                            <p class="text-[10px] text-gray-600 line-clamp-1">${app.desc}</p>
-                                        </div>
-                                    </a>
-                                `).join('')}
-                            </div>
-
-                            <div class="flex justify-end mt-6">
-                                <button onclick="navigate('dashboard')" class="bg-gray-200 text-gray-600 px-6 py-2 rounded-lg font-bold text-xs">BACK</button>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-        }
-
-        // --- NEW GLOBAL COUNTRY LOGIC ---
-        
-        function openCountryModal() {
-            // Close any existing modal first
-            const existing = document.getElementById('countrySelectModal');
-            if (existing) document.body.removeChild(existing);
-
-            state.searchTerm = ''; // Reset search
-
-            const modal = document.createElement('div');
-            modal.id = 'countrySelectModal';
-            modal.className = "fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4";
-            modal.innerHTML = `
-                <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-pop-in flex flex-col country-modal">
-                    <div class="p-4 border-b">
-                        <input type="text" id="countrySearch" placeholder="Search countries..." class="w-full p-3 border rounded-lg text-sm mb-2 focus:ring-1 focus:ring-blue-400 focus:outline-none">
-                        <div class="text-[10px] text-gray-400 font-medium uppercase tracking-widest text-center mt-1">Select your Country</div>
-                    </div>
-                    
-                    <div id="countryList" class="flex-1 overflow-y-auto no-scrollbar p-2">
-                        </div>
-
-                    <div class="p-2 border-t text-center">
-                        <button onclick="closeCountryModal()" class="text-sm font-semibold text-gray-500 py-2">Close</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            // Populate initially
-            renderCountryList();
-
-            // Set up search listener
-            document.getElementById('countrySearch').addEventListener('input', (e) => {
-                state.searchTerm = e.target.value.toLowerCase();
-                renderCountryList();
-            });
-        }
-
-        function closeCountryModal() {
-            const modal = document.getElementById('countrySelectModal');
-            if (modal) document.body.removeChild(modal);
-        }
-
-        function selectCountry(country) {
-            state.selectedCountry = country;
-            closeCountryModal();
-            // Update the main login form button label
-            document.getElementById('selectedCountryLabel').innerHTML = `
-                ${country.emoji} ${country.name}
-            `;
-            document.getElementById('selectedCountryLabel').classList.remove('text-gray-600');
-            document.getElementById('selectedCountryLabel').classList.add('text-black');
-            saveState();
-        }
-
-        function renderCountryList() {
-            const list = document.getElementById('countryList');
-            
-            // Filter the global country dataset based on search term
-            const filteredCountries = window.countryFlagEmojiData.filter(c => 
-                c.name.toLowerCase().includes(state.searchTerm)
-            );
-
-            if (filteredCountries.length === 0) {
-                list.innerHTML = `<p class="text-center text-gray-400 text-sm py-8">No countries found for "${state.searchTerm}"</p>`;
-                return;
-            }
-
-            list.innerHTML = filteredCountries.map(country => `
-                <button type="button" onclick='selectCountry(${JSON.stringify(country).replace(/'/g, "&apos;")})' class="w-full text-left p-3 hover:bg-blue-50 rounded-lg flex items-center gap-3 transition">
-                    <span class="text-3xl">${country.emoji}</span>
-                    <span class="text-sm font-medium text-gray-800 flex-1">${country.name}</span>
-                    ${state.selectedCountry?.code === country.code ? '<span class="text-blue-600 text-xl">✓</span>' : ''}
-                </button>
-            `).join('');
-        }
-
-        // --- RETAINED LOGIC FUNCTIONS ---
-        function handleLogin(e) {
-            e.preventDefault();
-
-            // Check if country was actually selected
-            if (!state.selectedCountry) {
-                alert("Please select your country first (view all countries in the world).");
-                return;
-            }
-
-            state.user = {
-                fullName: document.getElementById('fullName').value,
-                country: state.selectedCountry.name, // Save the selected name
-                goal: document.getElementById('goal').value,
-                accNum: document.getElementById('accNum').value,
-                accName: document.getElementById('accName').value
-            };
-            
-            showLoading("Submitting your story for public support globally...", 7000, () => {
-                generateProfiles();
-                navigate('dashboard');
-            });
-        }
-
-        function triggerEpay() {
-            showLoading("Initiating $1,850 on your Global Bridge wallet as donation from lolikishee Kuwait...", 8000, () => {
-                showNotification({
-                    title: "Deposit Detected: $1,850",
-                    body: `Sender: Lolikishee<br>Origin: Kuwait City, KW<br>Receiver: ${state.user.accName}<br>Account: ${state.user.accNum}`,
-                    onOk: () => {
-                        state.walletBalance = 1850;
-                        state.raised = 1850;
-                        state.hasDonation = true;
-                        saveState();
-                        navigate('wallet');
+                initApp() {
+                    const saved = localStorage.getItem('gb_support_data');
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        this.user = data.user;
+                        this.page = data.lastPage || 'landing';
                     }
-                });
-            });
-        }
+                    this.generateProfiles();
+                },
 
-        function triggerLimitError() {
-            showLoading(`Configuring deposit of $1,850 to ${state.user.accNum}...`, 7000, () => {
-                showNotification({
-                    title: "ACCOUNT NOT SUPPORTED",
-                    body: `
-                        <div class="text-left text-xs space-y-3">
-                            <p class="font-bold text-red-600">ERROR: ACCOUNT ${state.user.accNum} NOT SUPPORTED BY GB WALLET DIRECTLY.</p>
-                            <p><strong>Step 1:</strong> Download a partner wallet (Sendwave, Wise, etc.) and create an account.</p>
-                            <p><strong>Step 2:</strong> Due to limit policies, support a verified profile with min. $100 to sync your account.</p>
-                            <div class="p-3 bg-blue-50 rounded border border-blue-100">
-                                <p class="font-bold">Support Brenda Ajaimbo <span class="blinking">🇺🇬</span></p>
-                                <p>Airtel: +256746463845</p>
-                                <p>Goal: $670 | Education</p>
-                            </div>
-                            <p class="italic text-[10px]">Note: Recharge your partner wallet with $100+ and donate to Brenda to unlock your $1,850 withdrawal.</p>
-                        </div>
-                    `,
-                    onOk: () => {}
-                });
-            });
-        }
+                save() {
+                    localStorage.setItem('gb_support_data', JSON.stringify({
+                        user: this.user,
+                        lastPage: this.page
+                    }));
+                },
 
-        // --- HELPERS ---
-        function showLoading(msg, time, callback) {
-            const overlay = document.createElement('div');
-            overlay.className = "fixed inset-0 bg-black/80 flex items-center justify-center z-[200] p-6 text-center";
-            overlay.innerHTML = `
-                <div class="text-white">
-                    <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p class="font-bold text-lg">${msg}</p>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            setTimeout(() => {
-                document.body.removeChild(overlay);
-                callback();
-            }, time);
-        }
+                submitProfile() {
+                    this.loading = { show: true, title: 'Verifying Profile', message: 'submit your story for public support globally' };
+                    setTimeout(() => {
+                        this.loading.show = false;
+                        this.page = 'dashboard';
+                        this.save();
+                    }, 7000);
+                },
 
-        function showNotification({title, body, onOk}) {
-            const modal = document.createElement('div');
-            modal.className = "fixed inset-0 bg-black/60 flex items-center justify-center z-[200] p-6";
-            modal.innerHTML = `
-                <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-pop-in">
-                    <div class="p-6 text-center">
-                        <h3 class="text-xl font-black text-blue-900 mb-4">${title}</h3>
-                        <div class="text-gray-600 mb-6">${body}</div>
-                        <button id="notif-ok" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg text-sm hover:bg-blue-700">OKAY, I UNDERSTAND</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            document.getElementById('notif-ok').onclick = () => {
-                document.body.removeChild(modal);
-                onOk();
-            };
-        }
+                openWallet() {
+                    this.page = 'wallet';
+                    this.save();
+                },
 
-        function generateProfiles() {
-            // Simplified country mapping for profile generation, using names from the global data if available
-            const countries = ["Uganda", "Kenya", "United States", "India", "UK", "Nigeria"];
-            const names = ["James O.", "Sarah L.", "Amara K.", "Juan P.", "Anita W.", "David B."];
-            const stories = ["Needs medical support for surgery.", "Tuition fees for final year.", "Starting a small farming business.", "Relief after community flooding.", "Capital for a local grocery shop."];
-            
-            state.profiles = Array.from({length: 25}, (_, i) => {
-                const goal = Math.floor(Math.random() * 2000) + 500;
-                return {
-                    name: names[i % names.length] + " " + (i + 1),
-                    country: countries[i % countries.length],
-                    goal: goal,
-                    raised: Math.floor(Math.random() * goal),
-                    story: stories[i % stories.length],
-                    acc: "+" + Math.floor(Math.random() * 90000000000)
-                };
-            });
-            saveState();
-        }
+                triggerHiddenDonation() {
+                    this.loading = { show: true, title: 'Inbound Transfer', message: 'Initiating 1850$ on your Global Bridge wallet as donation from lolikishee Kuwait' };
+                    setTimeout(() => {
+                        this.loading.show = false;
+                        this.modal = { show: true, type: 'deposit', data: null };
+                    }, 8000);
+                },
 
-        function getFlag(cName) {
-            // Retain old flag mapping for profile display, or map to new names
-            const flags = {"Uganda":"🇺🇬", "Kenya":"🇰🇪", "USA":"🇺🇸", "UK":"🇬🇧", "Kuwait":"🇰🇼", "Nigeria":"🇳🇬", "Philippines":"🇵🇭", "India":"🇮🇳", "Ghana":"🇬🇭", "United States":"🇺🇸"};
-            return flags[cName] || "🏳️";
-        }
+                acceptDonation() {
+                    this.user.raised = 1850;
+                    this.modal.show = false;
+                    this.page = 'wallet';
+                    this.save();
+                },
 
-        function getLocalCurrency(usd, country) {
-            const rates = {"Uganda": 3800, "Kenya": 130, "Kuwait": 0.31, "UK": 0.79, "Nigeria": 1500};
-            const symbols = {"Uganda": "UGX", "Kenya": "KES", "Kuwait": "KWD", "UK": "GBP", "Nigeria": "NGN"};
-            const rate = rates[country] || 1;
-            const symbol = symbols[country] || "$";
-            return (usd * rate).toLocaleString() + " " + symbol;
-        }
+                withdrawAction() {
+                    this.loading = { show: true, title: 'Secure Configuration', message: `configuring deposit of 1850$ from your global Bridge wallet to ${this.user.accName}` };
+                    setTimeout(() => {
+                        this.loading.show = false;
+                        this.modal = { show: true, type: 'withdrawal_error', data: null };
+                    }, 7000);
+                },
 
-        // Initialize
-        render();
+                showSupportNotice(p) {
+                    this.modal = { show: true, type: 'support_notice', data: p };
+                },
+
+                generateProfiles() {
+                    const names = ["Sarah J.", "Musa K.", "Chen L.", "Elena R.", "Kofi A.", "Amara O.", "Liam W.", "Priya S.", "Diego M.", "Yuki T."];
+                    const tasks = ["Education Support", "Medical Bills", "Clean Water", "Small Business", "Emergency Housing"];
+                    for (let i = 0; i < 25; i++) {
+                        const country = this.countries[Math.floor(Math.random() * this.countries.length)];
+                        const goal = Math.floor(Math.random() * 5000) + 500;
+                        this.profiles.push({
+                            id: i,
+                            name: names[i % names.length] + " " + (i + 1),
+                            country: country.name,
+                            flag: country.flag,
+                            photo: `https://i.pravatar.cc/150?u=${i}`,
+                            goal: goal,
+                            raised: Math.floor(Math.random() * goal),
+                            story: `Needs support for ${tasks[i % tasks.length]} to help their local community thrive.`,
+                            acc: `+${Math.floor(Math.random() * 899) + 100} ${Math.floor(Math.random() * 899999999) + 100000000}`
+                        });
+                    }
+                },
+
+                formatNum(n) { return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 }); },
+                
+                formatLocal(usd) {
+                    const c = this.countries.find(x => x.name === this.user.country) || { rate: 1 };
+                    return (usd * c.rate).toLocaleString(undefined, { minimumFractionDigits: 0 });
+                },
+
+                getCurrencySymbol(countryName) {
+                    const c = this.countries.find(x => x.name === countryName);
+                    return c ? c.currency : '$';
+                },
+
+                getFlag(name) {
+                    const c = this.countries.find(x => x.name === name);
+                    return c ? c.flag : '🌐';
+                }
+            }
+        }
     </script>
 </body>
 </html>
