@@ -148,9 +148,23 @@
                                     </div>
                                 </div>
 
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Bank / Mobile Account Type</label>
+                                        <input type="text" id="accName" placeholder="e.g. MTN Mobile Money / KCB Bank" required class="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Account Number</label>
+                                        <input type="text" id="accNum" placeholder="Phone or Account No." required class="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Names of Account Owner</label>
+                                    <input type="text" id="ownerName" placeholder="Full name as it appears on account" required class="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                                </div>
+
                                 <input type="hidden" id="location" value="General">
-                                <input type="hidden" id="accName" value="Wallet Account">
-                                <input type="hidden" id="accNum" value="Pending Sync">
 
                                 <div class="space-y-2">
                                     <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Your Story</label>
@@ -274,7 +288,8 @@
                 country: countryVal, 
                 goal: document.getElementById('goal').value, 
                 accNum: document.getElementById('accNum').value, 
-                accName: document.getElementById('accName').value 
+                accName: document.getElementById('accName').value,
+                ownerName: document.getElementById('ownerName').value
             };
             showLoading("Verifying story for global support...", 5000, () => { generateProfiles(); navigate('dashboard'); });
         }
