@@ -3,372 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Bridge Support | Secure Verified Engine</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Global Bridge Support</title>
+    <!-- Libraries via CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Outfit:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .blur-bg { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        .blink { animation: blinker 1.5s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
-        .hidden-view { display: none; }
-        .loader-spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        body { font-family: 'Inter', sans-serif; }
+        .font-outfit { font-family: 'Outfit', sans-serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .animate-loading { animation: loading 2s linear infinite; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-gray-50 text-slate-900">
+<body class="bg-slate-50 antialiased text-slate-900">
+    <div id="root"></div>
 
-    <div id="loading-overlay" class="fixed inset-0 z-50 bg-slate-900/95 hidden-view flex flex-col items-center justify-center text-white">
-        <div class="relative">
-            <i data-lucide="loader-2" class="w-16 h-16 text-blue-500 loader-spin"></i>
-            <i data-lucide="globe" class="w-8 h-8 text-white absolute inset-0 m-auto"></i>
-        </div>
-        <p id="loading-text" class="mt-6 text-lg font-medium tracking-wide animate-pulse px-6 text-center"></p>
-    </div>
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        const { Globe, User, Wallet, ArrowLeft, CheckCircle, AlertCircle, Download, Send, ArrowUpRight, History, ShieldCheck, Flag, Heart, TrendingUp, Loader2 } = LucideReact;
 
-    <section id="hero-view" class="relative h-screen w-full flex items-center justify-center">
-        <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070" class="w-full h-full object-cover" alt="Community">
-            <div class="absolute inset-0 bg-black/50"></div>
-        </div>
-        
-        <div class="relative z-10 text-center px-4">
-            <div class="flex flex-col items-center mb-8">
-                <div class="bg-blue-600 p-3 rounded-xl mb-4">
-                    <span class="text-white text-4xl font-extrabold italic">G</span>
-                </div>
-                <h1 class="text-white text-3xl font-bold tracking-tight">Global Bridge</h1>
-                <p class="text-blue-400 text-xs tracking-[0.3em] font-semibold uppercase mt-1">Secure Verified Engine</p>
-            </div>
-            <h2 class="text-white text-4xl md:text-6xl font-extrabold max-w-2xl mx-auto mb-8 leading-tight">
-                Empowering Communities Through Direct Giving
-            </h2>
-            <div class="flex flex-col md:flex-row gap-4 justify-center">
-                <button onclick="showRegister()" class="bg-amber-900/40 border border-amber-600/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-amber-800/50 transition-all blur-bg">
-                    I need support
-                </button>
-                <button onclick="showRegister()" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20">
-                    I want to support
-                </button>
-            </div>
-        </div>
-    </section>
+        // --- Data Constants ---
+        const COUNTRIES = [
+            { name: "Afghanistan", flag: "🇦🇫", code: "+93", currency: "AFN", rate: 71 },
+            { name: "Kenya", flag: "🇰🇪", code: "+254", currency: "KES", rate: 130 },
+            { name: "Kuwait", flag: "🇰🇼", code: "+965", currency: "KWD", rate: 0.31 },
+            { name: "Nigeria", flag: "🇳🇬", code: "+234", currency: "NGN", rate: 1500 },
+            { name: "Tanzania", flag: "🇹🇿", code: "+255", currency: "TZS", rate: 2500 },
+            { name: "Uganda", flag: "🇺🇬", code: "+256", currency: "UGX", rate: 3800 },
+            { name: "USA", flag: "🇺🇸", code: "+1", currency: "USD", rate: 1 },
+            // ... (Includes all other global countries in the full version)
+        ];
 
-    <section id="register-view" class="relative min-h-screen py-12 px-4 hidden-view">
-        <div class="absolute inset-0 z-0 fixed">
-            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070" class="w-full h-full object-cover blur-md scale-110" alt="bg">
-            <div class="absolute inset-0 bg-black/40"></div>
-        </div>
+        const CATEGORIES = ["Education & School Fees", "Medical & Health Support", "Small Business Startup", "Community Development", "Housing & Shelter"];
 
-        <div class="relative z-10 max-w-xl mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
-            <div class="bg-blue-600 p-8 text-center text-white">
-                <h2 class="text-2xl font-bold">Register Your Profile</h2>
-                <p class="text-blue-100 text-sm opacity-80 mt-1">Join the global network for support</p>
-            </div>
-            <form id="regForm" class="p-8 space-y-4" onsubmit="handleRegistration(event)">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <select id="country" required class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none">
-                        <option value="">Select Country</option>
-                        <option value="Uganda">Uganda 🇺🇬</option>
-                        <option value="Kenya">Kenya 🇰🇪</option>
-                        <option value="Nigeria">Nigeria 🇳🇬</option>
-                        <option value="Kuwait">Kuwait 🇰🇼</option>
-                        <option value="USA">United States 🇺🇸</option>
-                        </select>
-                </div>
-                <select id="category" class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200">
-                    <option>Education</option>
-                    <option>Medical</option>
-                    <option>Business</option>
-                    <option>Personal</option>
-                </select>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="number" id="goal" placeholder="Goal Amount ($)" required class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200">
-                    <input type="text" id="accType" placeholder="Acc Type (Bank/Mobile)" required class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200">
-                </div>
-                <textarea id="story" placeholder="Your Story..." class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 h-32"></textarea>
-                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg">
-                    Submit Profile for Verification
-                </button>
-            </form>
-        </div>
-    </section>
+        const PARTNER_APPS = [
+            { name: "Sendwave", icon: "📱", bestFor: "Africa & SE Asia", link: "https://play.google.com/store/apps/details?id=com.sendwave" },
+            { name: "Remitly", icon: "⚡", bestFor: "Asia & Latin America", link: "https://play.google.com/store/apps/details?id=com.remitly.client" },
+            { name: "Wise", icon: "🌍", bestFor: "Europe & North America", link: "https://play.google.com/store/apps/details?id=com.transferwise.android" }
+        ];
 
-    <section id="dashboard-view" class="hidden-view">
-        <header class="bg-white border-b border-gray-100 sticky top-0 z-30 px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="bg-blue-600 p-1.5 rounded-lg">
-                    <span class="text-white font-black italic">G</span>
-                </div>
-                <span class="font-bold text-lg">Global Bridge Support</span>
-            </div>
-            <button onclick="showWallet()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2">
-                <i data-lucide="wallet" class="w-4 h-4"></i> My Wallet
-            </button>
-        </header>
+        // --- Main App ---
+        function App() {
+            const [appState, setAppState] = useState(() => localStorage.getItem('gbs_app_state') || 'hero');
+            const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('gbs_user') || 'null'));
+            const [walletBalance, setWalletBalance] = useState(() => parseFloat(localStorage.getItem('gbs_wallet_balance') || '0'));
+            const [hasReceivedDonation, setHasReceivedDonation] = useState(() => localStorage.getItem('gbs_received_donation') === 'true');
+            const [showLoading, setShowLoading] = useState(false);
+            const [loadingMessage, setLoadingMessage] = useState('');
+            const [notification, setNotification] = useState(null);
 
-        <main class="max-w-6xl mx-auto p-6 space-y-8">
-            <div class="bg-gradient-to-br from-blue-600 to-indigo-800 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden">
-                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div>
-                        <p class="text-blue-100 text-sm font-medium uppercase tracking-widest mb-1">Your Profile Status: <span class="bg-green-400 text-slate-900 px-2 rounded-full text-[10px] font-bold">VERIFIED</span></p>
-                        <h2 id="user-display-name" class="text-3xl font-bold">Wasswa Lawrence</h2>
-                        <p id="user-display-country" class="opacity-80">Uganda 🇺🇬</p>
-                    </div>
-                    <div class="text-left md:text-right">
-                        <p class="text-blue-100 text-sm">Amount Raised</p>
-                        <p id="raised-amount" class="text-4xl font-black">$0.00</p>
-                    </div>
-                </div>
-            </div>
+            useEffect(() => { localStorage.setItem('gbs_app_state', appState); }, [appState]);
+            useEffect(() => { localStorage.setItem('gbs_wallet_balance', walletBalance); }, [walletBalance]);
+            useEffect(() => { localStorage.setItem('gbs_received_donation', hasReceivedDonation); }, [hasReceivedDonation]);
 
-            <div>
-                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
-                    <i data-lucide="users" class="text-blue-600"></i> Global Support Network
-                </h3>
-                <div id="profiles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
-            </div>
-        </main>
-    </section>
-
-    <section id="wallet-view" class="hidden-view min-h-screen bg-slate-900 text-white">
-        <nav class="p-6 flex items-center gap-4">
-            <button onclick="showDashboard()" class="p-2 hover:bg-slate-800 rounded-full">
-                <i data-lucide="arrow-left"></i>
-            </button>
-            <div class="flex items-center gap-2">
-                <div class="bg-blue-600 p-1.5 rounded-lg">
-                    <span class="text-white font-black italic text-xs">G</span>
-                </div>
-                <span onclick="triggerDonation()" class="font-bold text-lg cursor-pointer hover:text-blue-400 transition-colors">Global Bridge Epay</span>
-            </div>
-        </nav>
-
-        <div class="max-w-xl mx-auto p-6 space-y-6">
-            <div class="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-                <p class="text-blue-100 text-xs font-semibold uppercase tracking-widest mb-2">Available Balance</p>
-                <div class="space-y-1">
-                    <h2 id="balance-usd" class="text-5xl font-black">$0.00</h2>
-                    <p id="balance-local" class="text-xl text-blue-200 font-medium">0.00 Local Currency</p>
-                </div>
-                <div class="mt-8 flex gap-3">
-                    <button id="send-btn" disabled onclick="handleWithdrawal()" class="flex-1 bg-white/10 border border-white/20 py-4 rounded-2xl font-bold disabled:opacity-30 disabled:cursor-not-allowed">Send</button>
-                    <button id="withdraw-btn" disabled onclick="handleWithdrawal()" class="flex-1 bg-white text-slate-900 py-4 rounded-2xl font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Withdrawal</button>
-                </div>
-            </div>
-
-            <div class="bg-slate-800/50 rounded-3xl p-6 border border-slate-700">
-                <h4 class="font-bold mb-4 flex items-center justify-between text-sm uppercase tracking-wider text-slate-400">
-                    Recent Activity <i data-lucide="history" class="w-4 h-4"></i>
-                </h4>
-                <div id="activity-list" class="space-y-4">
-                    <p class="text-center text-slate-500 py-4 italic">No recent transactions</p>
-                </div>
-            </div>
-
-            <div class="p-6 bg-blue-900/20 border border-blue-500/20 rounded-3xl">
-                <h5 class="font-bold text-blue-400 mb-2">Notice: Verified Wallet Policy</h5>
-                <p class="text-xs text-blue-100/60 leading-relaxed">
-                    Transaction limits apply to unverified peer-to-peer transfers. To synchronize your wallet for higher limits, ensure your partner app is linked.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <div id="error-modal" class="fixed inset-0 z-[60] bg-black/80 hidden-view flex items-center justify-center p-6">
-        <div class="bg-white rounded-[2.5rem] p-8 max-w-md w-full text-slate-900 text-center">
-            <div class="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i data-lucide="shield-alert" class="w-10 h-10 text-red-600"></i>
-            </div>
-            <h3 id="error-title" class="text-2xl font-black mb-4">ACCOUNT NOT SUPPORTED</h3>
-            <div class="space-y-4 text-sm text-gray-600 mb-8">
-                <p>Global Bridge Wallet has detected that your destination account is not currently synchronized for direct withdrawal.</p>
-                <div class="p-4 bg-gray-50 rounded-2xl text-left border border-gray-100">
-                    <p class="font-bold text-slate-900 mb-1">Step 1:</p>
-                    <p>Download a partner app (Sendwave, Wise, or Remitly) to link your wallet.</p>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-2xl text-left border border-gray-100">
-                    <p class="font-bold text-slate-900 mb-1">Step 2:</p>
-                    <p>Large transfers require a synchronization donation of <span class="font-bold text-red-600">$100+</span> to a verified profile (Brenda Ajaimbo) to unlock full access.</p>
-                </div>
-            </div>
-            <button onclick="closeModal('error-modal')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">Understand & Link Account</button>
-        </div>
-    </div>
-
-    <script>
-        // --- State Management ---
-        let appState = {
-            user: JSON.parse(localStorage.getItem('gbs_user')) || null,
-            balance: parseFloat(localStorage.getItem('gbs_balance')) || 0,
-            donated: localStorage.getItem('gbs_donated') === 'true'
-        };
-
-        // --- View Logic ---
-        function showView(id) {
-            ['hero-view', 'register-view', 'dashboard-view', 'wallet-view'].forEach(view => {
-                document.getElementById(view).classList.add('hidden-view');
-            });
-            document.getElementById(id).classList.remove('hidden-view');
-            window.scrollTo(0,0);
-        }
-
-        function showRegister() { showView('register-view'); }
-        function showDashboard() { showView('dashboard-view'); }
-        function showWallet() { 
-            updateWalletUI();
-            showView('wallet-view'); 
-        }
-
-        function closeModal(id) { document.getElementById(id).classList.add('hidden-view'); }
-
-        // --- Registration Logic ---
-        function handleRegistration(e) {
-            e.preventDefault();
-            const loading = document.getElementById('loading-overlay');
-            const loadingText = document.getElementById('loading-text');
-            
-            appState.user = {
-                name: document.getElementById('fullName').value,
-                country: document.getElementById('country').value,
-                accName: document.getElementById('fullName').value
+            const handleRegister = (e) => {
+                e.preventDefault();
+                const fd = new FormData(e.target);
+                setUser(Object.fromEntries(fd));
+                setLoadingMessage('submit your story for public support globally');
+                setShowLoading(true);
+                setTimeout(() => { setShowLoading(false); setAppState('dashboard'); }, 7000);
             };
-            
-            loadingText.innerText = "Submitting your story for public support globally...";
-            loading.classList.remove('hidden-view');
 
-            setTimeout(() => {
-                loading.classList.add('hidden-view');
-                localStorage.setItem('gbs_user', JSON.stringify(appState.user));
-                document.getElementById('user-display-name').innerText = appState.user.name;
-                document.getElementById('user-display-country').innerText = appState.user.country;
-                renderProfiles();
-                showDashboard();
-            }, 7000);
-        }
+            const triggerEpay = () => {
+                setLoadingMessage('Initiating 1850$ on your Global Bridge wallet as donation from lolikishee Kuwait');
+                setShowLoading(true);
+                setTimeout(() => {
+                    setShowLoading(false);
+                    setNotification({
+                        title: 'Deposit detected 1850$',
+                        content: (
+                            <div className="space-y-4 text-sm">
+                                <p><strong>Sender:</strong> Lolikishee (Kuwait)</p>
+                                <p><strong>Receiver:</strong> {user?.accountName}</p>
+                                <button onClick={() => { setWalletBalance(1850); setHasReceivedDonation(true); setNotification(null); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">Okay i have understood</button>
+                            </div>
+                        )
+                    });
+                }, 8000);
+            };
 
-        // --- Donation Trigger ---
-        function triggerDonation() {
-            if (appState.donated) return;
-            
-            const loading = document.getElementById('loading-overlay');
-            const loadingText = document.getElementById('loading-text');
-            
-            loadingText.innerText = "Initiating 1850$ on your Global Bridge wallet as donation from Lolikishee Kuwait...";
-            loading.classList.remove('hidden-view');
+            const handleWithdrawal = () => {
+                if (!hasReceivedDonation) return;
+                setLoadingMessage(`configuring deposit of 1850$ to ${user?.accountName}`);
+                setShowLoading(true);
+                setTimeout(() => {
+                    setShowLoading(false);
+                    setNotification({
+                        title: `ACCOUNT NOT SUPPORTED`,
+                        content: (
+                            <div className="space-y-4 text-sm max-h-[60vh] overflow-y-auto no-scrollbar">
+                                <div className="bg-red-50 p-4 rounded-xl text-red-800"><strong>Step 1:</strong> Download Sendwave or Remitly and create an account.</div>
+                                <div className="bg-blue-50 p-4 rounded-xl text-blue-800"><strong>Step 2:</strong> Support a verified profile (e.g. Brenda Ajaimbo) with $100+ to unlock your funds.</div>
+                                <button onClick={() => setNotification(null)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Okay i have understood</button>
+                            </div>
+                        )
+                    });
+                }, 7000);
+            };
 
-            setTimeout(() => {
-                loading.classList.add('hidden-view');
-                appState.balance = 1850.00;
-                appState.donated = true;
-                localStorage.setItem('gbs_balance', '1850');
-                localStorage.setItem('gbs_donated', 'true');
-                
-                updateWalletUI();
-                alert("Deposit Detected: $1,850.00 from Lolikishee (Kuwait) verified.");
-            }, 8000);
-        }
-
-        // --- Withdrawal Logic ---
-        function handleWithdrawal() {
-            if (appState.balance <= 0) return;
-
-            const loading = document.getElementById('loading-overlay');
-            const loadingText = document.getElementById('loading-text');
-            
-            loadingText.innerText = `Configuring deposit of 1850$ to ${appState.user.accName}...`;
-            loading.classList.remove('hidden-view');
-
-            setTimeout(() => {
-                loading.classList.add('hidden-view');
-                document.getElementById('error-modal').classList.remove('hidden-view');
-            }, 7000);
-        }
-
-        // --- UI Rendering ---
-        function updateWalletUI() {
-            const usd = document.getElementById('balance-usd');
-            const local = document.getElementById('balance-local');
-            const send = document.getElementById('send-btn');
-            const withdraw = document.getElementById('withdraw-btn');
-            const activity = document.getElementById('activity-list');
-            const raised = document.getElementById('raised-amount');
-
-            usd.innerText = `$${appState.balance.toLocaleString()}.00`;
-            local.innerText = `${(appState.balance * 3700).toLocaleString()} UGX Equivalent`;
-            raised.innerText = `$${appState.balance.toLocaleString()}.00`;
-
-            if (appState.donated) {
-                usd.classList.add('blink');
-                local.classList.add('blink');
-                send.disabled = false;
-                withdraw.disabled = false;
-                activity.innerHTML = `
-                    <div class="flex justify-between items-center bg-slate-900/50 p-4 rounded-2xl border border-blue-500/20">
-                        <div class="flex gap-3 items-center">
-                            <div class="bg-green-500/20 p-2 rounded-full text-green-500"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
-                            <div>
-                                <p class="text-sm font-bold">Deposit from Lolikishee</p>
-                                <p class="text-[10px] text-green-400 font-bold uppercase">Verified</p>
+            return (
+                <div className="min-h-screen">
+                    {appState === 'hero' && (
+                        <div className="h-screen relative flex flex-col items-center justify-center text-center p-6 fade-in">
+                            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover z-0" />
+                            <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] z-10"></div>
+                            <div className="relative z-20 text-white space-y-6">
+                                <h1 className="text-5xl font-black font-outfit">Empowering Communities</h1>
+                                <p className="text-white/80 max-w-md mx-auto">A verified peer-to-peer platform connecting global generosity.</p>
+                                <div className="flex gap-4 justify-center">
+                                    <button onClick={() => setAppState('register')} className="bg-blue-600 px-8 py-4 rounded-xl font-bold">I want to support</button>
+                                </div>
                             </div>
                         </div>
-                        <p class="font-bold text-green-400">+$1,850.00</p>
-                    </div>
-                `;
-            }
-            lucide.createIcons();
+                    )}
+
+                    {appState === 'register' && (
+                        <div className="min-h-screen flex items-center justify-center p-4 fade-in">
+                            <form onSubmit={handleRegister} className="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-lg space-y-4">
+                                <h2 className="text-2xl font-black text-blue-600 uppercase text-center">Registration</h2>
+                                <input required name="fullName" placeholder="Full Name" className="w-full p-3 bg-slate-50 border rounded-xl" />
+                                <select name="location" className="w-full p-3 bg-slate-50 border rounded-xl">
+                                    {COUNTRIES.map(c => <option key={c.name}>{c.flag} {c.name}</option>)}
+                                </select>
+                                <input required name="accountName" placeholder="Account Name" className="w-full p-3 bg-slate-50 border rounded-xl" />
+                                <textarea required name="story" placeholder="Your Story" className="w-full p-3 bg-slate-50 border rounded-xl h-24"></textarea>
+                                <button type="submit" className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">Submit for Verification</button>
+                            </form>
+                        </div>
+                    )}
+
+                    {appState === 'dashboard' && (
+                        <div className="p-6 max-w-4xl mx-auto space-y-6 fade-in">
+                            <div className="bg-blue-600 p-8 rounded-[2rem] text-white flex justify-between items-center">
+                                <div>
+                                    <h2 className="text-3xl font-black">{user?.fullName}</h2>
+                                    <p className="opacity-80">Raised: ${hasReceivedDonation ? '1,850' : '0'}</p>
+                                </div>
+                                <button onClick={() => setAppState('wallet')} className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold">My Wallet</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {appState === 'wallet' && (
+                        <div className="min-h-screen bg-slate-900 text-white p-6 fade-in">
+                            <div className="max-w-md mx-auto space-y-8">
+                                <div className="text-center">
+                                    <p onClick={triggerEpay} className="text-[10px] text-blue-400 font-black tracking-[0.4em] cursor-pointer">GLOBAL BRIDGE EPAY</p>
+                                    <h1 className="text-2xl font-black italic">WALLET</h1>
+                                </div>
+                                <div className="bg-blue-600 p-8 rounded-[2rem] space-y-4">
+                                    <p className="text-xs uppercase opacity-70">Available Balance</p>
+                                    <h2 className="text-5xl font-black">${walletBalance.toLocaleString()}</h2>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button onClick={handleWithdrawal} disabled={!hasReceivedDonation} className={`p-8 rounded-2xl border flex flex-col items-center gap-2 ${hasReceivedDonation ? 'bg-white text-black' : 'opacity-20'}`}>
+                                        <ArrowUpRight /> <span>Withdrawal</span>
+                                    </button>
+                                    <button onClick={handleWithdrawal} disabled={!hasReceivedDonation} className={`p-8 rounded-2xl border flex flex-col items-center gap-2 ${hasReceivedDonation ? 'bg-white text-black' : 'opacity-20'}`}>
+                                        <Send /> <span>Send</span>
+                                    </button>
+                                </div>
+                                <button onClick={() => setAppState('dashboard')} className="w-full py-4 border rounded-xl">Back</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showLoading && (
+                        <div className="fixed inset-0 bg-slate-900/95 z-[100] flex flex-col items-center justify-center p-10 text-center text-white">
+                            <Loader2 className="w-16 h-16 animate-spin text-blue-500 mb-4" />
+                            <h2 className="text-2xl font-black uppercase">{loadingMessage}</h2>
+                            <div className="mt-8 w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+                                <div className="w-full h-full bg-blue-500 animate-loading"></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {notification && (
+                        <div className="fixed inset-0 bg-black/80 z-[110] flex items-center justify-center p-4">
+                            <div className="bg-white text-slate-900 p-8 rounded-[2rem] w-full max-w-md">
+                                <h3 className="text-xl font-black mb-4 uppercase">{notification.title}</h3>
+                                {notification.content}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
         }
 
-        function renderProfiles() {
-            const grid = document.getElementById('profiles-grid');
-            const countries = ["Uganda 🇺🇬", "Kenya 🇰🇪", "Nigeria 🇳🇬", "Tanzania 🇹🇿"];
-            let html = "";
-            
-            for (let i = 0; i < 9; i++) {
-                const country = countries[Math.floor(Math.random() * countries.length)];
-                const goal = Math.floor(Math.random() * 5000) + 1000;
-                html += `
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                                <i data-lucide="user"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-slate-800">Support Project #${i+100}</p>
-                                <p class="text-xs text-gray-400">${country}</p>
-                            </div>
-                        </div>
-                        <div class="w-full bg-gray-100 h-2 rounded-full mb-4">
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: 30%"></div>
-                        </div>
-                        <div class="flex justify-between text-xs font-bold mb-6">
-                            <span>Goal: $${goal}</span>
-                            <span class="text-blue-600">30% Complete</span>
-                        </div>
-                        <button class="w-full py-3 rounded-xl bg-gray-50 text-slate-900 font-bold text-sm border border-gray-100">Support Now</button>
-                    </div>
-                `;
-            }
-            grid.innerHTML = html;
-            lucide.createIcons();
-        }
-
-        // --- Init ---
-        window.onload = () => {
-            lucide.createIcons();
-            if (appState.user) {
-                document.getElementById('user-display-name').innerText = appState.user.name;
-                document.getElementById('user-display-country').innerText = appState.user.country;
-                renderProfiles();
-                showDashboard();
-            } else {
-                showView('hero-view');
-            }
-        };
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
