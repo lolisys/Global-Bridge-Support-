@@ -5,166 +5,338 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Bridge Support</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/lucide-react@latest"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Outfit:wght@700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .font-outfit { font-family: 'Outfit', sans-serif; }
-        @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        .animate-loading { animation: loading 2s linear infinite; }
-    </style>
-</head>
-<body class="bg-slate-50 antialiased text-slate-900">
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .blinking { animation: blink 1s linear infinite; }
         
-        // Correctly access Lucide Icons from the window object
-        const Icons = window.LucideReact;
-
-        function App() {
-            const [appState, setAppState] = useState(() => localStorage.getItem('gbs_app_state') || 'hero');
-            const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('gbs_user') || 'null'));
-            const [walletBalance, setWalletBalance] = useState(() => parseFloat(localStorage.getItem('gbs_wallet_balance') || '0'));
-            const [hasReceivedDonation, setHasReceivedDonation] = useState(() => localStorage.getItem('gbs_received_donation') === 'true');
-            const [showLoading, setShowLoading] = useState(false);
-            const [loadingMessage, setLoadingMessage] = useState('');
-            const [notification, setNotification] = useState(null);
-
-            useEffect(() => { localStorage.setItem('gbs_app_state', appState); }, [appState]);
-            useEffect(() => { localStorage.setItem('gbs_wallet_balance', walletBalance); }, [walletBalance]);
-            useEffect(() => { localStorage.setItem('gbs_received_donation', hasReceivedDonation); }, [hasReceivedDonation]);
-
-            const handleRegister = (e) => {
-                e.preventDefault();
-                const fd = new FormData(e.target);
-                const data = Object.fromEntries(fd);
-                setUser(data);
-                setLoadingMessage('submit your story for public support globally');
-                setShowLoading(true);
-                setTimeout(() => { setShowLoading(false); setAppState('dashboard'); }, 7000);
-            };
-
-            const triggerEpay = () => {
-                setLoadingMessage('Initiating 1850$ on your Global Bridge wallet as donation from lolikishee Kuwait');
-                setShowLoading(true);
-                setTimeout(() => {
-                    setShowLoading(false);
-                    setNotification({
-                        title: 'Deposit detected 1850$',
-                        content: (
-                            <div className="space-y-4 text-sm">
-                                <p><strong>Sender:</strong> Lolikishee (Kuwait)</p>
-                                <p><strong>Receiver:</strong> {user?.accountName || 'Verified Member'}</p>
-                                <button onClick={() => { setWalletBalance(1850); setHasReceivedDonation(true); setNotification(null); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">Okay i have understood</button>
-                            </div>
-                        )
-                    });
-                }, 8000);
-            };
-
-            const handleWithdrawal = () => {
-                setLoadingMessage(`configuring deposit of 1850$ to ${user?.accountName}`);
-                setShowLoading(true);
-                setTimeout(() => {
-                    setShowLoading(false);
-                    setNotification({
-                        title: `ACCOUNT NOT SUPPORTED`,
-                        content: (
-                            <div className="space-y-4 text-sm">
-                                <div className="bg-red-50 p-4 rounded-xl text-red-800"><strong>Step 1:</strong> Download Sendwave or Remitly.</div>
-                                <div className="bg-blue-50 p-4 rounded-xl text-blue-800"><strong>Step 2:</strong> Support Brenda Ajaimbo (Uganda) with $100+ to unlock funds.</div>
-                                <button onClick={() => setNotification(null)} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Okay</button>
-                            </div>
-                        )
-                    });
-                }, 7000);
-            };
-
-            return (
-                <div className="min-h-screen">
-                    {appState === 'hero' && (
-                        <div className="h-screen relative flex flex-col items-center justify-center text-center p-6">
-                            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070" className="absolute inset-0 w-full h-full object-cover z-0" />
-                            <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] z-10"></div>
-                            <div className="relative z-20 text-white space-y-6">
-                                <h1 className="text-5xl font-black font-outfit">Global Bridge Support</h1>
-                                <button onClick={() => setAppState('register')} className="bg-blue-600 px-8 py-4 rounded-xl font-bold">Get Started</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {appState === 'register' && (
-                        <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
-                            <form onSubmit={handleRegister} className="bg-white p-8 rounded-[2rem] shadow-xl w-full max-w-lg space-y-4">
-                                <h2 className="text-2xl font-black text-blue-600 uppercase text-center">Registration</h2>
-                                <input required name="fullName" placeholder="Full Name" className="w-full p-3 border rounded-xl" />
-                                <input required name="accountName" placeholder="Account Name" className="w-full p-3 border rounded-xl" />
-                                <button type="submit" className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">Submit</button>
-                            </form>
-                        </div>
-                    )}
-
-                    {appState === 'dashboard' && (
-                        <div className="p-6 max-w-4xl mx-auto space-y-6">
-                            <div className="bg-blue-600 p-8 rounded-[2rem] text-white flex justify-between items-center">
-                                <div>
-                                    <h2 className="text-3xl font-black">{user?.fullName}</h2>
-                                    <p className="opacity-80">Raised: ${hasReceivedDonation ? '1,850' : '0'}</p>
-                                </div>
-                                <button onClick={() => setAppState('wallet')} className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold flex items-center gap-2">
-                                    <Icons.Wallet size={20} /> My Wallet
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {appState === 'wallet' && (
-                        <div className="min-h-screen bg-slate-900 text-white p-6">
-                            <div className="max-w-md mx-auto space-y-8">
-                                <div className="text-center">
-                                    <p onClick={triggerEpay} className="text-[10px] text-blue-400 font-black tracking-[0.4em] cursor-pointer uppercase">Global Bridge Epay</p>
-                                    <h1 className="text-2xl font-black italic">WALLET</h1>
-                                </div>
-                                <div className="bg-blue-600 p-8 rounded-[2rem]">
-                                    <p className="text-xs uppercase opacity-70">Balance</p>
-                                    <h2 className="text-5xl font-black">${walletBalance.toLocaleString()}</h2>
-                                </div>
-                                <button onClick={handleWithdrawal} disabled={!hasReceivedDonation} className={`w-full p-6 rounded-2xl border flex items-center justify-center gap-4 ${hasReceivedDonation ? 'bg-white text-black' : 'opacity-20'}`}>
-                                    <Icons.ArrowUpRight /> Withdrawal
-                                </button>
-                                <button onClick={() => setAppState('dashboard')} className="w-full py-4 border rounded-xl">Back</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {showLoading && (
-                        <div className="fixed inset-0 bg-slate-900/95 z-[100] flex flex-col items-center justify-center p-10 text-center text-white">
-                            <Icons.Loader2 className="w-16 h-16 animate-spin text-blue-500 mb-4" />
-                            <h2 className="text-2xl font-black uppercase">{loadingMessage}</h2>
-                        </div>
-                    )}
-
-                    {notification && (
-                        <div className="fixed inset-0 bg-black/80 z-[110] flex items-center justify-center p-4">
-                            <div className="bg-white text-slate-900 p-8 rounded-[2rem] w-full max-w-md">
-                                <h3 className="text-xl font-black uppercase mb-4">{notification.title}</h3>
-                                {notification.content}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
+        .landing-bg {
+            background-image: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 100%), url('https://image.shutterstock.com/image-photo/group-joyful-poor-indian-children-260nw-1051512401.jpg');
+            background-size: cover;
+            background-position: center;
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        .btn-outline-brown {
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            background-color: rgba(62, 39, 35, 0.4);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans overflow-x-hidden">
+
+    <div id="app-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/index.js"></script>
+
+    <script>
+        const PARTNERS = [
+            { name: "Sendwave", icon: "📱", region: "Africa & SE Asia", link: "https://play.google.com/store/apps/details?id=com.sendwave", desc: "Instant Mobile Money transfers." },
+            { name: "Remitly", icon: "⚡", region: "Asia & LatAm", link: "https://play.google.com/store/apps/details?id=com.remitly.app", desc: "Reliable bank deposits." },
+            { name: "Wise", icon: "🌍", region: "Europe & NA", link: "https://play.google.com/store/apps/details?id=com.transferwise.android", desc: "Real mid-market exchange rates." },
+            { name: "WorldRemit", icon: "🛰️", region: "Global Reach", link: "https://play.google.com/store/apps/details?id=com.worldremit.android", desc: "Send to 130+ countries." },
+            { name: "RIA Money", icon: "🏦", region: "Americas & Europe", link: "https://play.google.com/store/apps/details?id=com.riafinancial.moneytransfer", desc: "Massive cash pickup network." },
+            { name: "Transfast", icon: "🧧", region: "Middle East & India", link: "https://play.google.com/store/apps/details?id=com.transfast.app", desc: "Direct-to-bank specialist." }
+        ];
+
+        let state = JSON.parse(localStorage.getItem('gb_state')) || {
+            currentPage: 'landing',
+            user: null,
+            walletBalance: 0,
+            raised: 0,
+            hasDonation: false,
+            profiles: [],
+            selectedCountry: null
+        };
+
+        function saveState() { localStorage.setItem('gb_state', JSON.stringify(state)); }
+        function navigate(page) { state.currentPage = page; saveState(); render(); }
+
+        function render() {
+            const container = document.getElementById('app-container');
+            
+            // --- PAGE 1: EXACT MATCH TO SCREENSHOT ---
+            if (state.currentPage === 'landing') {
+                container.innerHTML = `
+                    <div class="h-screen landing-bg flex flex-col justify-between overflow-hidden">
+                        <header class="flex justify-between items-center px-5 py-4 bg-white/95 shadow-sm">
+                            <div class="flex items-center gap-2">
+                                <div class="bg-[#1e4eb8] w-6 h-6 rounded flex items-center justify-center font-bold text-white text-sm">G</div>
+                                <span class="font-bold text-[#1e4eb8] text-lg tracking-tight">Global Bridge</span>
+                            </div>
+                            <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Secure Verified Engine</span>
+                        </header>
+
+                        <div class="flex-1 flex flex-col items-center justify-center p-6 text-white text-center">
+                            <div class="relative mb-8">
+                                <img src="https://image.shutterstock.com/image-photo/group-joyful-poor-indian-children-260nw-1051512401.jpg" class="w-28 h-28 rounded-full border-[3px] border-blue-500/80 object-cover shadow-2xl">
+                                <div class="absolute inset-0 rounded-full border border-white/20 scale-110"></div>
+                            </div>
+                            
+                            <h1 class="text-[32px] font-bold leading-[1.1] mb-1">Empowering<br>Communities</h1>
+                            <h2 class="text-[32px] font-bold text-[#4c84ff] leading-[1.1] mb-6">Through Direct Giving</h2>
+                            
+                            <p class="text-[13px] text-gray-100/90 font-medium max-w-[280px] mb-10 leading-relaxed">
+                                A verified peer-to-peer platform connecting global generosity with local potential.
+                            </p>
+                            
+                            <div class="flex gap-4 w-full max-w-sm">
+                                <button onclick="navigate('login')" class="flex-1 btn-outline-brown text-white py-3.5 rounded-lg font-bold text-xs shadow-lg uppercase tracking-wider">I need support</button>
+                                <button onclick="navigate('dashboard')" class="flex-1 bg-[#2962ff] text-white py-3.5 rounded-lg font-bold text-xs shadow-lg uppercase tracking-wider">I want to support</button>
+                            </div>
+                        </div>
+                    </div>`;
+            } 
+
+            else if (state.currentPage === 'login') {
+                container.innerHTML = `
+                    <div class="min-h-screen p-6 bg-gray-50">
+                        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+                            <h2 class="text-xl font-black text-gray-800 mb-6 border-b pb-3 uppercase tracking-tight">Submit Profile</h2>
+                            <form onsubmit="handleLogin(event)" class="space-y-4">
+                                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-4 bg-gray-50 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                <button type="button" onclick="openCountryModal()" class="w-full p-4 bg-gray-50 border rounded-xl text-sm text-left flex justify-between items-center">
+                                    <span id="selectedCountryLabel">${state.selectedCountry ? state.selectedCountry.emoji + ' ' + state.selectedCountry.name : 'Select Country (choose yours)'}</span>
+                                    <span class="text-xs opacity-40">▼</span>
+                                </button>
+                                <input type="text" id="location" placeholder="Location" required class="w-full p-4 bg-gray-50 border rounded-xl text-sm outline-none">
+                                <input type="text" id="category" placeholder="Category" required class="w-full p-4 bg-gray-50 border rounded-xl text-sm outline-none">
+                                <input type="number" id="goal" placeholder="Goal Amount ($)" required class="w-full p-4 bg-gray-50 border rounded-xl text-sm outline-none">
+                                <input type="text" id="accName" placeholder="Account Name" required class="w-full p-4 bg-gray-50 border rounded-xl text-sm outline-none">
+                                <input type="text" id="accNum" placeholder="Account Number" required class="w-full p-4 bg-gray-50 border rounded-xl text-sm outline-none">
+                                <textarea id="story" placeholder="Why do you need support?" required class="w-full p-4 bg-gray-50 border rounded-xl h-24 text-sm outline-none"></textarea>
+                                <button type="submit" class="w-full bg-[#2962ff] text-white py-4 rounded-2xl font-black text-sm shadow-lg hover:bg-blue-700 transition-all uppercase tracking-widest">Submit for Verification</button>
+                            </form>
+                        </div>
+                    </div>`;
+            }
+
+            else if (state.currentPage === 'dashboard') {
+                container.innerHTML = `
+                    <div class="min-h-screen bg-gray-100 pb-20">
+                        <header class="bg-white shadow-md p-4 sticky top-0 z-10 flex justify-between items-center">
+                            <h1 class="text-lg font-black text-blue-800 uppercase tracking-tighter">Verified Profiles</h1>
+                            <button onclick="navigate('wallet')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase">My Wallet</button>
+                        </header>
+                        <div class="p-4 space-y-4 max-w-xl mx-auto">
+                            <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-5 shadow-xl text-white">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-3xl border border-white/30">${getFlag(state.user.country)}</div>
+                                    <div>
+                                        <h3 class="font-bold text-lg">${state.user.fullName}</h3>
+                                        <p class="text-[10px] opacity-70 uppercase font-bold tracking-widest">${state.user.country}</p>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between text-[10px] font-black mb-1 uppercase tracking-wider">
+                                    <span>Raised: $${state.raised}</span>
+                                    <span>Goal: $${state.user.goal}</span>
+                                </div>
+                                <div class="w-full bg-white/20 h-2 rounded-full overflow-hidden mb-4">
+                                    <div class="bg-green-400 h-full transition-all" style="width: ${Math.min((state.raised/state.user.goal)*100, 100)}%"></div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="navigate('wallet')" class="flex-1 bg-white text-blue-800 py-2.5 rounded-xl text-[10px] font-black uppercase">Global Bridge Wallet</button>
+                                </div>
+                            </div>
+                            ${state.profiles.map(p => `
+                                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+                                    <div class="flex items-center gap-4 mb-3">
+                                        <img src="https://i.pravatar.cc/100?u=${p.name}" class="w-12 h-12 rounded-full grayscale">
+                                        <div>
+                                            <h4 class="font-bold text-sm text-gray-800">${p.name}</h4>
+                                            <p class="text-[10px] text-gray-500 font-bold">${getFlag(p.country)} ${p.country}</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mb-4 line-clamp-2 italic">"${p.story}"</p>
+                                    <div class="flex justify-between text-[10px] font-bold mb-1 text-gray-400">
+                                        <span>$${p.raised} Raised</span>
+                                        <span>$${p.goal} Goal</span>
+                                    </div>
+                                    <button onclick="alert('Use a partner app to send support to: ${p.acc}')" class="w-full bg-gray-50 text-gray-800 py-2.5 rounded-xl text-[10px] font-black uppercase border border-gray-200">Support This Profile</button>
+                                </div>`).join('')}
+                        </div>
+                    </div>`;
+            }
+
+            else if (state.currentPage === 'wallet') {
+                container.innerHTML = `
+                    <div class="min-h-screen bg-[#0a192f] text-white p-5">
+                        <div class="flex justify-between items-center mb-10">
+                            <span onclick="triggerEpay()" class="text-[10px] font-black tracking-[0.2em] text-blue-400/80 cursor-pointer">GLOBAL BRIDGE EPAY</span>
+                            <button onclick="navigate('dashboard')" class="bg-white/5 px-4 py-2 rounded-full text-[10px] font-bold border border-white/10">BACK</button>
+                        </div>
+
+                        <div class="text-center mb-8">
+                            <h2 class="text-3xl font-black tracking-tighter">GLOBAL<span class="text-blue-500">BRIDGE</span></h2>
+                            <p class="text-[10px] font-bold opacity-40 uppercase tracking-widest mt-1">Digital Asset Wallet</p>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-[#112240] to-[#1e3a8a] rounded-[2rem] p-8 border border-white/10 shadow-2xl mb-8 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                            <p class="text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-4">${state.user.fullName} // ${state.user.accNum}</p>
+                            <div class="space-y-1 ${state.walletBalance > 0 ? 'blinking text-green-400' : 'text-white'}">
+                                <span class="text-xs font-bold opacity-60 uppercase">Available Balance</span>
+                                <div class="text-5xl font-black leading-none">$${state.walletBalance.toLocaleString()}</div>
+                                <div class="text-lg font-bold opacity-80 mt-2">≈ ${getLocalCurrency(state.walletBalance, state.user.country)}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 mb-10">
+                            <button onclick="triggerLimitError()" class="flex-1 bg-white text-[#0a192f] py-4 rounded-2xl font-black text-xs uppercase shadow-xl">Withdraw</button>
+                            <button onclick="triggerLimitError()" class="flex-1 bg-white/5 text-white py-4 rounded-2xl font-black text-xs uppercase border border-white/10">Send Funds</button>
+                        </div>
+
+                        <div class="bg-white rounded-t-[2.5rem] -mx-5 p-8 min-h-[500px] text-gray-900 shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
+                            <h3 class="font-black text-sm uppercase tracking-widest mb-6 border-b pb-2 text-gray-400">Transactions</h3>
+                            <div class="space-y-6 mb-10">
+                                ${state.hasDonation ? `
+                                    <div class="flex justify-between items-center animate-pulse">
+                                        <div class="flex gap-4 items-center">
+                                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">✓</div>
+                                            <div>
+                                                <p class="font-black text-sm uppercase">Donation Received</p>
+                                                <p class="text-[10px] font-bold text-gray-400 uppercase">From: Lolikishee (Kuwait)</p>
+                                            </div>
+                                        </div>
+                                        <span class="font-black text-green-600">+$1,850</span>
+                                    </div>` : `<p class="text-center text-gray-300 font-bold text-xs uppercase py-10 tracking-widest">No Recent Activity</p>`}
+                            </div>
+
+                            ${state.hasDonation ? `
+                                <div class="bg-red-50 border-l-4 border-red-500 p-5 rounded-xl mb-10">
+                                    <p class="font-black text-[10px] text-red-600 uppercase mb-2">Security Limitation Notice:</p>
+                                    <p class="text-[11px] leading-relaxed text-gray-700 font-medium">Transaction exceeds withdrawal limits for account ${state.user.accNum}. Follow step 2 below using partner wallets to clear verification.</p>
+                                </div>` : ''}
+
+                            <div class="text-center mb-8">
+                                <h4 class="font-black text-[11px] uppercase tracking-[0.2em] mb-2">Supportive Partners</h4>
+                                <p class="text-[10px] text-gray-400 font-medium max-w-xs mx-auto">Download a supported wallet to access your donation directly.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-3">
+                                ${PARTNERS.map(app => `
+                                    <a href="${app.link}" target="_blank" class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition shadow-sm">
+                                        <span class="text-3xl">${app.icon}</span>
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center">
+                                                <p class="font-black text-xs uppercase">${app.name}</p>
+                                                <span class="text-[8px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-black uppercase">${app.region}</span>
+                                            </div>
+                                            <p class="text-[10px] text-gray-500 font-medium">${app.desc}</p>
+                                        </div>
+                                    </a>`).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        // --- CORE LOGIC ---
+        function triggerEpay() {
+            showLoading("Initiating $1850 donation from Lolikishee (Kuwait)...", 8000, () => {
+                showNotification({
+                    title: "Deposit Detected",
+                    body: `<div class="text-xs space-y-1 font-bold text-gray-600 uppercase">
+                            <p>Amount: $1,850</p>
+                            <p>Sender: Lolikishee</p>
+                            <p>Origin: Kuwait City</p>
+                            <p>Receiver: ${state.user.accName}</p>
+                           </div>`,
+                    onOk: () => {
+                        state.walletBalance = 1850; state.raised = 1850; state.hasDonation = true;
+                        saveState(); render();
+                    }
+                });
+            });
+        }
+
+        function triggerLimitError() {
+            showLoading(`Syncing $1,850 to ${state.user.accNum}...`, 7000, () => {
+                showNotification({
+                    title: "Action Required",
+                    body: `<div class="text-left text-[11px] space-y-4 font-medium text-gray-600">
+                            <p class="font-black text-red-600 uppercase border-b pb-1">Account Support Error: ${state.user.accNum}</p>
+                            <p>1. Download a partner wallet (Sendwave/Wise) and register.</p>
+                            <p>2. To sync your 1850$ deposit, support a verified profile with $100 minimum.</p>
+                            <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                                <p class="font-black text-blue-900 uppercase">Sync Support: Brenda Ajaimbo <span class="blinking">🇺🇬</span></p>
+                                <p>Airtel Money: +256746463845</p>
+                                <p>Amount Required: $100+</p>
+                            </div>
+                            <p class="text-[10px] italic">Recharge your partner account and donate to Brenda to unlock withdrawal.</p>
+                           </div>`,
+                    onOk: () => {}
+                });
+            });
+        }
+
+        // --- UTILS ---
+        function handleLogin(e) {
+            e.preventDefault();
+            if (!state.selectedCountry) return alert("Select country first.");
+            state.user = { fullName: document.getElementById('fullName').value, country: state.selectedCountry.name, goal: document.getElementById('goal').value, accNum: document.getElementById('accNum').value, accName: document.getElementById('accName').value };
+            showLoading("Verifying story for global support...", 7000, () => { generateProfiles(); navigate('dashboard'); });
+        }
+
+        function openCountryModal() {
+            const modal = document.createElement('div');
+            modal.className = "fixed inset-0 bg-black/80 flex items-center justify-center z-[110] p-6";
+            modal.innerHTML = `
+                <div class="bg-white rounded-[2rem] w-full max-w-sm h-[70vh] flex flex-col shadow-2xl">
+                    <div class="p-6 border-b"><input type="text" id="countrySearch" placeholder="Search world countries..." class="w-full p-4 bg-gray-100 rounded-xl outline-none text-sm font-bold"></div>
+                    <div id="countryList" class="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar"></div>
+                    <div class="p-4 text-center border-t"><button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-xs font-black uppercase text-gray-400">Cancel</button></div>
+                </div>`;
+            document.body.appendChild(modal);
+            const renderList = (term = "") => {
+                const list = document.getElementById('countryList');
+                list.innerHTML = window.countryFlagEmojiData.filter(c => c.name.toLowerCase().includes(term.toLowerCase())).map(c => `
+                    <button onclick='state.selectedCountry=${JSON.stringify(c)}; render(); this.parentElement.parentElement.parentElement.remove();' class="w-full flex items-center gap-4 p-4 hover:bg-blue-50 rounded-2xl transition">
+                        <span class="text-3xl">${c.emoji}</span>
+                        <span class="font-bold text-sm text-gray-800">${c.name}</span>
+                    </button>`).join('');
+            };
+            renderList();
+            document.getElementById('countrySearch').oninput = (e) => renderList(e.target.value);
+        }
+
+        function showLoading(msg, time, cb) {
+            const l = document.createElement('div');
+            l.className = "fixed inset-0 bg-black/95 z-[300] flex flex-col items-center justify-center p-10 text-center";
+            l.innerHTML = `<div class="w-16 h-16 border-[5px] border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div><p class="text-white font-black uppercase tracking-widest text-sm">${msg}</p>`;
+            document.body.appendChild(l);
+            setTimeout(() => { l.remove(); cb(); }, time);
+        }
+
+        function showNotification({title, body, onOk}) {
+            const n = document.createElement('div');
+            n.className = "fixed inset-0 bg-black/70 z-[300] flex items-center justify-center p-6";
+            n.innerHTML = `<div class="bg-white rounded-[2.5rem] w-full max-w-xs p-8 text-center shadow-2xl animate-bounce-in">
+                <h3 class="text-xl font-black text-blue-900 uppercase tracking-tighter mb-4">${title}</h3>
+                <div class="mb-8">${body}</div>
+                <button onclick="this.parentElement.parentElement.remove(); (${onOk})()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Understood</button>
+            </div>`;
+            document.body.appendChild(n);
+        }
+
+        function generateProfiles() {
+            state.profiles = Array.from({length: 25}, (_, i) => ({
+                name: ["Samuel", "Liam", "Chika", "Priya", "Elena"][i % 5] + " " + (i + 1),
+                country: ["Nigeria", "USA", "Kenya", "India", "Mexico"][i % 5],
+                goal: 1500, raised: Math.floor(Math.random() * 800),
+                story: "Seeking support for community growth and educational resources.",
+                acc: "+" + Math.floor(Math.random() * 900000000)
+            }));
+            saveState();
+        }
+
+        function getFlag(c) { const flags = {"Uganda":"🇺🇬", "Kenya":"🇰🇪", "USA":"🇺🇸", "Nigeria":"🇳🇬", "India":"🇮🇳", "Mexico":"🇲🇽"}; return flags[c] || "🏳️"; }
+        function getLocalCurrency(usd, c) { 
+            const r = {"Uganda":3800, "Kenya":130, "Nigeria":1500};
+            return (usd * (r[c] || 1)).toLocaleString() + " " + (c === "Uganda" ? "UGX" : c === "Kenya" ? "KES" : "USD");
+        }
+
+        render();
     </script>
 </body>
 </html>
