@@ -15,65 +15,26 @@
             background-position: center;
         }
 
-        /* Styles specifically for the Login/Profile Form */
-        .form-card {
-            background: #ffffff;
-            border-radius: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .form-header-img {
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80');
-            background-size: cover;
-            background-position: center;
-            height: 220px;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .input-field {
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 12px 16px;
-            width: 100%;
-            outline: none;
-            transition: border-color 0.2s;
-            color: #374151;
-        }
-
-        .input-field:focus {
-            border-color: #3b82f6;
-        }
-
-        .label-text {
-            font-size: 11px;
-            font-weight: 700;
-            color: #374151;
-            margin-bottom: 6px;
-            display: block;
-        }
-
         .btn-outline-brown {
             border: 1.5px solid rgba(255, 255, 255, 0.4);
             background-color: rgba(62, 39, 35, 0.4);
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* New styles for the specific login UI */
+        .form-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-100 font-sans overflow-x-hidden">
 
     <div id="app-container"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/index.js"></script>
+
     <script>
         const CATEGORIES = [
-            "Education",
+            "Education & School Fees",
             "Medical & Healthcare",
             "Orphanage Support",
             "Small Business Start-up",
@@ -112,18 +73,25 @@
                     <div class="h-screen landing-bg flex flex-col justify-between overflow-hidden">
                         <header class="flex justify-between items-center px-5 py-4 bg-white/95 shadow-sm">
                             <div class="flex items-center gap-2">
-                                <div class="bg-[#2563eb] w-6 h-6 rounded flex items-center justify-center font-bold text-white text-sm">G</div>
-                                <span class="font-bold text-[#2563eb] text-lg tracking-tight">Global Bridge</span>
+                                <div class="bg-[#1e4eb8] w-6 h-6 rounded flex items-center justify-center font-bold text-white text-sm">G</div>
+                                <span class="font-bold text-[#1e4eb8] text-lg tracking-tight">Global Bridge</span>
                             </div>
                             <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Secure Verified Engine</span>
                         </header>
 
                         <div class="flex-1 flex flex-col items-center justify-center p-6 text-white text-center">
+                            <div class="relative mb-8">
+                                <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=200&h=200&auto=format&fit=crop" class="w-28 h-28 rounded-full border-[3px] border-blue-500/80 object-cover shadow-2xl">
+                                <div class="absolute inset-0 rounded-full border border-white/20 scale-110"></div>
+                            </div>
                             <h1 class="text-[32px] font-bold leading-[1.1] mb-1">Empowering<br>Communities</h1>
                             <h2 class="text-[32px] font-bold text-[#4c84ff] leading-[1.1] mb-6">Through Direct Giving</h2>
+                            <p class="text-[13px] text-gray-100/90 font-medium max-w-[280px] mb-10 leading-relaxed">
+                                A verified peer-to-peer platform connecting global generosity with local potential.
+                            </p>
                             <div class="flex gap-4 w-full max-w-sm">
-                                <button onclick="navigate('login')" class="flex-1 btn-outline-brown text-white py-3.5 rounded-lg font-bold text-xs uppercase">I need support</button>
-                                <button onclick="navigate('dashboard')" class="flex-1 bg-[#2563eb] text-white py-3.5 rounded-lg font-bold text-xs uppercase">I want to support</button>
+                                <button onclick="navigate('login')" class="flex-1 btn-outline-brown text-white py-3.5 rounded-lg font-bold text-xs shadow-lg uppercase tracking-wider">I need support</button>
+                                <button onclick="navigate('dashboard')" class="flex-1 bg-[#2962ff] text-white py-3.5 rounded-lg font-bold text-xs shadow-lg uppercase tracking-wider">I want to support</button>
                             </div>
                         </div>
                     </div>`;
@@ -131,69 +99,66 @@
 
             else if (state.currentPage === 'login') {
                 container.innerHTML = `
-                    <div class="min-h-screen bg-gray-50 flex flex-col">
-                        <nav class="flex justify-between items-center px-6 py-4 bg-white">
+                    <div class="min-h-screen bg-gray-50 flex flex-col items-center pb-12">
+                        <header class="w-full flex justify-between items-center px-6 py-4 bg-white shadow-sm mb-8">
                             <div class="flex items-center gap-2">
-                                <div class="bg-[#2563eb] w-6 h-6 rounded flex items-center justify-center font-bold text-white text-sm">G</div>
-                                <span class="font-bold text-[#2563eb] text-lg tracking-tight">Global Bridge</span>
+                                <div class="bg-[#2962ff] w-6 h-6 rounded flex items-center justify-center font-bold text-white text-sm">G</div>
+                                <span class="font-bold text-[#1e4eb8] text-lg tracking-tight">Global Bridge</span>
                             </div>
                             <div class="flex items-center gap-4">
-                                <span class="text-[8px] text-gray-400 font-bold uppercase tracking-widest">SECURE VERIFIED ENGINE</span>
-                                <button onclick="navigate('landing')">
-                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                                </button>
+                                <span class="text-[9px] text-gray-400 font-bold uppercase tracking-widest hidden sm:block">Secure Verified Engine</span>
+                                <svg onclick="navigate('landing')" class="w-6 h-6 text-gray-400 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                             </div>
-                        </nav>
+                        </header>
 
-                        <div class="flex-1 p-4 md:p-8 flex justify-center items-start">
-                            <div class="w-full max-w-2xl form-card overflow-hidden">
-                                <div class="form-header-img">
-                                    <h1 class="text-white text-4xl font-bold mb-2">Join the Bridge</h1>
-                                    <p class="text-white text-sm font-medium opacity-90">Your story matters. Let us help you tell it to the world.</p>
+                        <div class="w-full max-w-[650px] bg-white rounded-3xl overflow-hidden form-shadow mx-4">
+                            <div class="relative h-48 sm:h-56">
+                                <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center p-6">
+                                    <h2 class="text-white text-3xl sm:text-4xl font-bold mb-2">Join the Bridge</h2>
+                                    <p class="text-white/90 text-sm font-medium">Your story matters. Let us help you tell it to the world.</p>
+                                </div>
+                            </div>
+
+                            <form onsubmit="handleLogin(event)" class="p-8 sm:p-12 space-y-6">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Full Name</label>
+                                        <input type="text" id="fullName" required class="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Location</label>
+                                        <input type="text" id="countryInput" placeholder="UK London" required class="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-300 focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                                    </div>
                                 </div>
 
-                                <form onsubmit="handleLogin(event)" class="p-8 space-y-6">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label class="label-text">Full Name</label>
-                                            <input type="text" id="fullName" placeholder="" required class="input-field">
-                                        </div>
-                                        <div>
-                                            <label class="label-text">Location</label>
-                                            <input type="text" id="countryInput" placeholder="UK London" required class="input-field bg-gray-50/50">
-                                        </div>
-                                    </div>
+                                <div class="space-y-2">
+                                    <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Category</label>
+                                    <select id="category" required class="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 outline-none appearance-none">
+                                        <option value="Education">Education</option>
+                                        ${CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                                    </select>
+                                </div>
 
-                                    <div>
-                                        <label class="label-text">Category</label>
-                                        <select id="category" required class="input-field appearance-none bg-white">
-                                            ${CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
-                                        </select>
+                                <div class="space-y-2">
+                                    <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Support Goal (USD) amount need for your fundraising</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                        <input type="number" id="goal" placeholder="Amount in $" required class="w-full p-3.5 pl-8 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-300 outline-none">
                                     </div>
+                                </div>
 
-                                    <div>
-                                        <label class="label-text">Support Goal (USD) amount need for your fundraising</label>
-                                        <div class="relative">
-                                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                                            <input type="number" id="goal" placeholder="Amount in $" required class="input-field pl-8">
-                                        </div>
-                                    </div>
+                                <input type="hidden" id="location" value="General">
+                                <input type="hidden" id="accName" value="Wallet Account">
+                                <input type="hidden" id="accNum" value="Pending Sync">
 
-                                    <div class="hidden">
-                                        <input type="text" id="accName" value="Verified Account">
-                                        <input type="text" id="accNum" value="GB-7788">
-                                    </div>
-
-                                    <div>
-                                        <label class="label-text">Your Story</label>
-                                        <textarea id="story" placeholder="Tell donors about your situation..." required class="input-field h-32 resize-none"></textarea>
-                                    </div>
-
-                                    <button type="submit" class="w-full bg-[#2563eb] text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-blue-700 transition-colors">
-                                        Submit Profile for Verification
-                                    </button>
-                                </form>
-                            </div>
+                                <div class="space-y-2">
+                                    <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Your Story</label>
+                                    <textarea id="story" placeholder="Tell donors about your situation..." required class="w-full p-4 bg-white border border-gray-200 rounded-xl h-32 text-sm placeholder-gray-300 outline-none resize-none"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="w-full bg-[#2962ff] text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-blue-600 transition-all">Submit Profile for Verification</button>
+                            </form>
                         </div>
                     </div>`;
             }
@@ -208,7 +173,7 @@
                         <div class="p-4 space-y-4 max-w-xl mx-auto">
                             <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-5 shadow-xl text-white">
                                 <div class="flex items-center gap-4 mb-4">
-                                    <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-3xl border border-white/30">🌍</div>
+                                    <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-3xl border border-white/30">${getFlag(state.user.country)}</div>
                                     <div>
                                         <h3 class="font-bold text-lg">${state.user.fullName}</h3>
                                         <p class="text-[10px] opacity-70 uppercase font-bold tracking-widest">${state.user.country}</p>
@@ -223,31 +188,152 @@
                                 </div>
                                 <button onclick="navigate('wallet')" class="w-full bg-white text-blue-800 py-2.5 rounded-xl text-[10px] font-black uppercase">Open Digital Wallet</button>
                             </div>
+                            ${state.profiles.map(p => `
+                                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
+                                    <div class="flex items-center gap-4 mb-3">
+                                        <img src="https://i.pravatar.cc/100?u=${p.name}" class="w-12 h-12 rounded-full grayscale">
+                                        <div>
+                                            <h4 class="font-bold text-sm text-gray-800">${p.name}</h4>
+                                            <p class="text-[10px] text-gray-500 font-bold">${getFlag(p.country)} ${p.country}</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mb-4 line-clamp-2 italic">"${p.story}"</p>
+                                    <div class="flex justify-between text-[10px] font-bold mb-1 text-gray-400">
+                                        <span>$${p.raised} Raised</span>
+                                        <span>$${p.goal} Goal</span>
+                                    </div>
+                                    <button onclick="alert('Use a partner app to send support to: ${p.acc}')" class="w-full bg-gray-50 text-gray-800 py-2.5 rounded-xl text-[10px] font-black uppercase border border-gray-200">Support This Profile</button>
+                                </div>`).join('')}
                         </div>
                     </div>`;
             }
-            // ... (Wallet view remains same as original)
+
+            else if (state.currentPage === 'wallet') {
+                container.innerHTML = `
+                    <div class="min-h-screen bg-[#0a192f] text-white p-5">
+                        <div class="flex justify-between items-center mb-10">
+                            <span onclick="triggerEpay()" class="text-[10px] font-black tracking-[0.2em] text-blue-400/80 cursor-pointer">GLOBAL BRIDGE EPAY</span>
+                            <button onclick="navigate('dashboard')" class="bg-white/5 px-4 py-2 rounded-full text-[10px] font-bold border border-white/10">BACK</button>
+                        </div>
+                        <div class="text-center mb-8">
+                            <h2 class="text-3xl font-black tracking-tighter">GLOBAL<span class="text-blue-500">BRIDGE</span></h2>
+                            <p class="text-[10px] font-bold opacity-40 uppercase tracking-widest mt-1">Digital Asset Wallet</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-[#112240] to-[#1e3a8a] rounded-[2rem] p-8 border border-white/10 shadow-2xl mb-8 relative overflow-hidden">
+                            <p class="text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-4">${state.user.fullName} // ${state.user.accNum}</p>
+                            <div class="space-y-1 ${state.walletBalance > 0 ? 'blinking text-green-400' : 'text-white'}">
+                                <span class="text-xs font-bold opacity-60 uppercase">Available Balance</span>
+                                <div class="text-5xl font-black leading-none">$${state.walletBalance.toLocaleString()}</div>
+                                <div class="text-lg font-bold opacity-80 mt-2">≈ ${getLocalCurrency(state.walletBalance, state.user.country)}</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 mb-10">
+                            <button onclick="triggerLimitError()" class="flex-1 bg-white text-[#0a192f] py-4 rounded-2xl font-black text-xs uppercase shadow-xl">Withdraw</button>
+                            <button onclick="triggerLimitError()" class="flex-1 bg-white/5 text-white py-4 rounded-2xl font-black text-xs uppercase border border-white/10">Send Funds</button>
+                        </div>
+                        <div class="bg-white rounded-t-[2.5rem] -mx-5 p-8 min-h-[500px] text-gray-900 shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
+                            <h3 class="font-black text-sm uppercase tracking-widest mb-6 border-b pb-2 text-gray-400">Transactions</h3>
+                            <div class="space-y-6 mb-10">
+                                ${state.hasDonation ? `
+                                    <div class="flex justify-between items-center animate-pulse">
+                                        <div class="flex gap-4 items-center">
+                                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">✓</div>
+                                            <div>
+                                                <p class="font-black text-sm uppercase">Donation Received</p>
+                                                <p class="text-[10px] font-bold text-gray-400 uppercase">From: Lolikishee (Kuwait)</p>
+                                            </div>
+                                        </div>
+                                        <span class="font-black text-green-600">+$1,850</span>
+                                    </div>` : `<p class="text-center text-gray-300 font-bold text-xs uppercase py-10 tracking-widest">No Recent Activity</p>`}
+                            </div>
+                            <div class="grid grid-cols-1 gap-3">
+                                ${PARTNERS.map(app => `
+                                    <a href="${app.link}" target="_blank" class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition shadow-sm">
+                                        <span class="text-3xl">${app.icon}</span>
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center">
+                                                <p class="font-black text-xs uppercase">${app.name}</p>
+                                                <span class="text-[8px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-black uppercase">${app.region}</span>
+                                            </div>
+                                            <p class="text-[10px] text-gray-500 font-medium">${app.desc}</p>
+                                        </div>
+                                    </a>`).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+            }
         }
 
+        // --- CORE LOGIC ---
         function handleLogin(e) {
             e.preventDefault();
+            const countryVal = document.getElementById('countryInput').value;
+            
             state.user = { 
                 fullName: document.getElementById('fullName').value, 
-                country: document.getElementById('countryInput').value, 
-                goal: document.getElementById('goal').value,
-                accName: "Verified",
-                accNum: "ID-1002"
+                country: countryVal, 
+                goal: document.getElementById('goal').value, 
+                accNum: document.getElementById('accNum').value, 
+                accName: document.getElementById('accName').value 
             };
-            const msg = "Verifying profile for global support...";
-            showLoading(msg, 3000, () => { navigate('dashboard'); });
+            showLoading("Verifying story for global support...", 5000, () => { generateProfiles(); navigate('dashboard'); });
+        }
+
+        function triggerEpay() {
+            showLoading("Initiating $1850 donation...", 4000, () => {
+                state.walletBalance = 1850; state.raised = 1850; state.hasDonation = true;
+                saveState(); render();
+            });
+        }
+
+        function triggerLimitError() {
+            showLoading(`Processing sync...`, 3000, () => {
+                showNotification({
+                    title: "Action Required",
+                    body: `<p class="text-xs font-medium text-gray-600">Verification sync required for account ${state.user.accNum}. Follow instructions on dashboard to unlock funds.</p>`,
+                    onOk: () => {}
+                });
+            });
         }
 
         function showLoading(msg, time, cb) {
             const l = document.createElement('div');
-            l.className = "fixed inset-0 bg-black/90 z-[300] flex flex-col items-center justify-center p-10 text-center";
-            l.innerHTML = `<div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div><p class="text-white font-bold uppercase tracking-widest text-xs">${msg}</p>`;
+            l.className = "fixed inset-0 bg-black/95 z-[300] flex flex-col items-center justify-center p-10 text-center";
+            l.innerHTML = `<div class="w-16 h-16 border-[5px] border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div><p class="text-white font-black uppercase tracking-widest text-sm">${msg}</p>`;
             document.body.appendChild(l);
             setTimeout(() => { l.remove(); cb(); }, time);
+        }
+
+        function showNotification({title, body, onOk}) {
+            const n = document.createElement('div');
+            n.className = "fixed inset-0 bg-black/70 z-[300] flex items-center justify-center p-6";
+            n.innerHTML = `<div class="bg-white rounded-[2.5rem] w-full max-w-xs p-8 text-center shadow-2xl">
+                <h3 class="text-xl font-black text-blue-900 uppercase tracking-tighter mb-4">${title}</h3>
+                <div class="mb-8">${body}</div>
+                <button onclick="this.parentElement.parentElement.remove(); (${onOk})()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Understood</button>
+            </div>`;
+            document.body.appendChild(n);
+        }
+
+        function generateProfiles() {
+            state.profiles = Array.from({length: 15}, (_, i) => ({
+                name: ["Samuel", "Liam", "Chika", "Priya", "Elena"][i % 5] + " " + (i + 1),
+                country: ["Nigeria", "Uganda", "Kenya", "India", "Mexico"][i % 5],
+                goal: 1500, raised: Math.floor(Math.random() * 800),
+                story: "Seeking support for community growth and educational resources.",
+                acc: "+" + Math.floor(Math.random() * 900000000)
+            }));
+            saveState();
+        }
+
+        function getFlag(c) { 
+            const f = {"Uganda":"🇺🇬", "Kenya":"🇰🇪", "Nigeria":"🇳🇬", "USA":"🇺🇸", "UK":"🇬🇧", "London":"🇬🇧"};
+            return f[c] || "🌍";
+        }
+
+        function getLocalCurrency(usd, c) { 
+            const r = {"Uganda":3800, "Kenya":130, "Nigeria":1500};
+            return (usd * (r[c] || 1)).toLocaleString() + " " + (c === "Uganda" ? "UGX" : c === "Kenya" ? "KES" : "USD");
         }
 
         render();
