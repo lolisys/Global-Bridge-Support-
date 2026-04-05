@@ -5,321 +5,370 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Bridge Support | Secure Verified Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .bg-hero {
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), 
-                        url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
-            background-size: cover;
-            background-position: center;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .blur-bg { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
         .blink { animation: blinker 1.5s linear infinite; }
         @keyframes blinker { 50% { opacity: 0; } }
-        [x-cloak] { display: none !important; }
+        .hidden-view { display: none; }
+        .loader-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900" x-data="gbsApp()" x-init="init()">
+<body class="bg-gray-50 text-slate-900">
 
-    <template x-if="view === 'hero'">
-        <div class="h-screen flex flex-col bg-hero text-white">
-            <header class="p-6 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <div class="w-10 h-10 bg-blue-600 rounded flex items-center justify-center font-bold text-2xl">G</div>
-                    <div>
-                        <h1 class="font-bold tracking-tight text-xl leading-none">Global Bridge</h1>
-                        <p class="text-[10px] uppercase tracking-[0.2em] text-blue-400">Secure Verified Engine</p>
-                    </div>
-                </div>
-            </header>
-            <main class="flex-1 flex flex-col justify-center items-center px-6 text-center">
-                <h2 class="text-4xl md:text-6xl font-extrabold mb-4">Empowering Communities Through Direct Giving</h2>
-                <p class="text-lg text-slate-200 max-w-2xl mb-8">Join the world's most trusted peer-to-peer verification network for global support.</p>
-                <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-                    <button @click="view = 'register'" class="flex-1 bg-amber-600/90 hover:bg-amber-600 py-4 rounded-xl font-bold transition">I need support</button>
-                    <button @click="view = 'register'" class="flex-1 bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-bold transition">I want to support</button>
-                </div>
-            </main>
+    <div id="loading-overlay" class="fixed inset-0 z-50 bg-slate-900/95 hidden-view flex flex-col items-center justify-center text-white">
+        <div class="relative">
+            <i data-lucide="loader-2" class="w-16 h-16 text-blue-500 loader-spin"></i>
+            <i data-lucide="globe" class="w-8 h-8 text-white absolute inset-0 m-auto"></i>
         </div>
-    </template>
-
-    <template x-if="view === 'register'">
-        <div class="min-h-screen bg-hero flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden" x-show="!loading">
-                <div class="bg-blue-600 p-6 text-white text-center">
-                    <h2 class="text-2xl font-bold">Registration Portal</h2>
-                    <p class="text-blue-100 text-sm">Create your verified global profile</p>
-                </div>
-                <form @submit.prevent="submitProfile()" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold uppercase text-slate-500">Full Name</label>
-                        <input x-model="user.name" type="text" required class="w-full border rounded-lg p-3 bg-slate-50" placeholder="John Doe">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold uppercase text-slate-500">Your Location</label>
-                        <select x-model="user.country" required class="w-full border rounded-lg p-3 bg-slate-50">
-                            <option value="">Select Country</option>
-                            <template x-for="c in countries" :key="c">
-                                <option :value="c" x-text="c"></option>
-                            </template>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold uppercase text-slate-500">Support Category</label>
-                        <select x-model="user.category" required class="w-full border rounded-lg p-3 bg-slate-50">
-                            <option value="Education">Education</option>
-                            <option value="Medical">Medical</option>
-                            <option value="Business">Small Business</option>
-                            <option value="Emergency">Emergency Relief</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold uppercase text-slate-500">Goal Amount ($)</label>
-                        <input x-model="user.goal" type="number" required class="w-full border rounded-lg p-3 bg-slate-50" placeholder="5000">
-                    </div>
-                    <div class="col-span-full space-y-1">
-                        <label class="text-xs font-bold uppercase text-slate-500">Your Story</label>
-                        <textarea x-model="user.story" required class="w-full border rounded-lg p-3 bg-slate-50 h-24" placeholder="Briefly describe your need..."></textarea>
-                    </div>
-                    <button type="submit" class="col-span-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition">Submit Profile for Verification</button>
-                </form>
-            </div>
-        </div>
-    </template>
-
-    <template x-if="view === 'dashboard'">
-        <div class="min-h-screen">
-            <nav class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center font-bold text-white">G</div>
-                    <span class="font-bold">Global Bridge Support</span>
-                </div>
-                <button @click="view = 'wallet'" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold">My Wallet</button>
-            </nav>
-
-            <main class="p-6 max-w-5xl mx-auto">
-                <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-8 text-white mb-10 shadow-xl">
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <p class="text-blue-100 uppercase text-xs font-bold tracking-widest mb-1">Your Verified Profile</p>
-                            <h2 class="text-3xl font-bold" x-text="user.name"></h2>
-                            <p class="flex items-center gap-2 opacity-80"><i data-lucide="map-pin" class="w-4 h-4"></i> <span x-text="user.country"></span></p>
-                        </div>
-                        <div class="bg-white/20 p-4 rounded-2xl backdrop-blur">
-                            <p class="text-xs uppercase font-bold opacity-70">Amount Raised</p>
-                            <p class="text-2xl font-mono font-bold" x-text="formatUSD(balance)"></p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <button class="bg-white text-blue-700 px-6 py-3 rounded-xl font-bold">Support Now</button>
-                        <button @click="view = 'wallet'" class="border border-white/30 bg-white/10 hover:bg-white/20 px-6 py-3 rounded-xl font-bold transition">My Global Bridge Wallet</button>
-                    </div>
-                </div>
-
-                <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><i data-lucide="globe" class="text-blue-600"></i> Global Network</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <template x-for="p in staticProfiles" :key="p.id">
-                        <div class="bg-white border rounded-2xl p-5 shadow-sm">
-                            <div class="flex gap-4 mb-4">
-                                <img :src="`https://i.pravatar.cc/150?u=${p.id}`" class="w-12 h-12 rounded-full bg-slate-200">
-                                <div>
-                                    <h4 class="font-bold" x-text="p.name"></h4>
-                                    <p class="text-xs text-slate-500" x-text="p.country"></p>
-                                </div>
-                            </div>
-                            <p class="text-sm text-slate-600 mb-4 line-clamp-2" x-text="p.story"></p>
-                            <div class="w-full bg-slate-100 h-2 rounded-full mb-4">
-                                <div class="bg-blue-500 h-full rounded-full" :style="`width: ${p.progress}%`"></div>
-                            </div>
-                            <button @click="alert('Open Partner App: Sendwave, Remitly, Wise, WorldRemit')" class="w-full py-2 bg-slate-50 border font-bold text-sm rounded-lg hover:bg-slate-100">Support Project</button>
-                        </div>
-                    </template>
-                </div>
-            </main>
-        </div>
-    </template>
-
-    <template x-if="view === 'wallet'">
-        <div class="min-h-screen bg-slate-900 text-white p-6">
-            <header class="flex justify-between items-center mb-10">
-                <button @click="view = 'dashboard'" class="p-2 hover:bg-slate-800 rounded-full"><i data-lucide="arrow-left"></i></button>
-                <div class="flex flex-col items-center cursor-pointer" @click="triggerHiddenDeposit()">
-                    <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center font-bold text-white mb-1">G</div>
-                    <p class="text-xs font-bold tracking-widest uppercase text-blue-400">Global Bridge Epay</p>
-                </div>
-                <div class="w-10"></div>
-            </header>
-
-            <div class="max-w-md mx-auto">
-                <h2 class="text-2xl font-bold mb-6">GLOBAL BRIDGE WALLET</h2>
-                
-                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-8 rounded-[2rem] shadow-2xl mb-8 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-6 opacity-20"><i data-lucide="nfc" class="w-12 h-12"></i></div>
-                    <p class="text-sm uppercase font-bold text-blue-100 mb-2">Available Balance</p>
-                    <div class="space-y-1">
-                        <p class="text-4xl font-mono font-bold" :class="balance > 0 ? 'blink' : ''" x-text="formatUSD(balance)"></p>
-                        <p class="text-xl font-mono text-blue-200" :class="balance > 0 ? 'blink' : ''" x-text="formatLocal(balance)"></p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 mb-10">
-                    <button @click="handleWithdraw()" 
-                            :disabled="balance <= 0"
-                            :class="balance <= 0 ? 'opacity-50 cursor-not-allowed bg-slate-800' : 'bg-blue-600'"
-                            class="py-4 rounded-2xl font-bold flex flex-col items-center gap-2">
-                        <i data-lucide="download"></i> Withdrawal
-                    </button>
-                    <button @click="handleWithdraw()" 
-                            :disabled="balance <= 0"
-                            :class="balance <= 0 ? 'opacity-50 cursor-not-allowed bg-slate-800' : 'bg-slate-700'"
-                            class="py-4 rounded-2xl font-bold flex flex-col items-center gap-2">
-                        <i data-lucide="send"></i> Send
-                    </button>
-                </div>
-
-                <div class="bg-slate-800/50 rounded-2xl p-6">
-                    <h4 class="text-sm font-bold uppercase text-slate-500 mb-4">Recent Activity</h4>
-                    <template x-if="balance === 0">
-                        <p class="text-slate-600 text-center py-4">No recent activity/donation</p>
-                    </template>
-                    <template x-if="balance > 0">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center"><i data-lucide="arrow-down-left"></i></div>
-                                <div>
-                                    <p class="font-bold">Lolikishee</p>
-                                    <p class="text-xs text-slate-500">Kuwait • Verified</p>
-                                </div>
-                            </div>
-                            <p class="text-green-400 font-bold">+$1,850.00</p>
-                        </div>
-                    </template>
-                </div>
-
-                <div class="mt-8 p-4 bg-blue-900/20 border border-blue-900/30 rounded-xl text-[11px] text-blue-300 leading-relaxed">
-                    <strong>OFFICIAL NOTICE:</strong> Due to international transaction limits, please ensure your account is synchronized with partner wallets. Follow terms and policies for large sum withdrawals.
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <div x-show="loading" x-cloak class="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center text-white text-center px-10">
-        <div class="relative mb-8">
-            <div class="w-24 h-24 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
-            <div class="absolute inset-0 flex items-center justify-center"><i data-lucide="globe" class="w-10 h-10 text-blue-500"></i></div>
-        </div>
-        <p class="text-xl font-medium max-w-xs" x-text="loadingText"></p>
+        <p id="loading-text" class="mt-6 text-lg font-medium tracking-wide animate-pulse px-6 text-center"></p>
     </div>
 
-    <div x-show="showError" x-cloak class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
-        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden text-slate-900">
-            <div class="bg-red-600 p-6 text-white text-center">
-                <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-2"></i>
-                <h3 class="text-xl font-bold uppercase tracking-tight">Account Not Supported</h3>
+    <section id="hero-view" class="relative h-screen w-full flex items-center justify-center">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070" class="w-full h-full object-cover" alt="Community">
+            <div class="absolute inset-0 bg-black/50"></div>
+        </div>
+        
+        <div class="relative z-10 text-center px-4">
+            <div class="flex flex-col items-center mb-8">
+                <div class="bg-blue-600 p-3 rounded-xl mb-4">
+                    <span class="text-white text-4xl font-extrabold italic">G</span>
+                </div>
+                <h1 class="text-white text-3xl font-bold tracking-tight">Global Bridge</h1>
+                <p class="text-blue-400 text-xs tracking-[0.3em] font-semibold uppercase mt-1">Secure Verified Engine</p>
             </div>
-            <div class="p-8">
-                <p class="text-sm font-bold text-red-600 mb-4 uppercase">Error: Global Bridge Wallet Sync Failed</p>
-                <div class="space-y-6">
+            <h2 class="text-white text-4xl md:text-6xl font-extrabold max-w-2xl mx-auto mb-8 leading-tight">
+                Empowering Communities Through Direct Giving
+            </h2>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <button onclick="showRegister()" class="bg-amber-900/40 border border-amber-600/30 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-amber-800/50 transition-all blur-bg">
+                    I need support
+                </button>
+                <button onclick="showRegister()" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20">
+                    I want to support
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="register-view" class="relative min-h-screen py-12 px-4 hidden-view">
+        <div class="absolute inset-0 z-0 fixed">
+            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2070" class="w-full h-full object-cover blur-md scale-110" alt="bg">
+            <div class="absolute inset-0 bg-black/40"></div>
+        </div>
+
+        <div class="relative z-10 max-w-xl mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
+            <div class="bg-blue-600 p-8 text-center text-white">
+                <h2 class="text-2xl font-bold">Register Your Profile</h2>
+                <p class="text-blue-100 text-sm opacity-80 mt-1">Join the global network for support</p>
+            </div>
+            <form id="regForm" class="p-8 space-y-4" onsubmit="handleRegistration(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="country" required class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none">
+                        <option value="">Select Country</option>
+                        <option value="Uganda">Uganda 🇺🇬</option>
+                        <option value="Kenya">Kenya 🇰🇪</option>
+                        <option value="Nigeria">Nigeria 🇳🇬</option>
+                        <option value="Kuwait">Kuwait 🇰🇼</option>
+                        <option value="USA">United States 🇺🇸</option>
+                        </select>
+                </div>
+                <select id="category" class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200">
+                    <option>Education</option>
+                    <option>Medical</option>
+                    <option>Business</option>
+                    <option>Personal</option>
+                </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="number" id="goal" placeholder="Goal Amount ($)" required class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200">
+                    <input type="text" id="accType" placeholder="Acc Type (Bank/Mobile)" required class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200">
+                </div>
+                <textarea id="story" placeholder="Your Story..." class="w-full p-4 rounded-xl bg-gray-50 border border-gray-200 h-32"></textarea>
+                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg">
+                    Submit Profile for Verification
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <section id="dashboard-view" class="hidden-view">
+        <header class="bg-white border-b border-gray-100 sticky top-0 z-30 px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 p-1.5 rounded-lg">
+                    <span class="text-white font-black italic">G</span>
+                </div>
+                <span class="font-bold text-lg">Global Bridge Support</span>
+            </div>
+            <button onclick="showWallet()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2">
+                <i data-lucide="wallet" class="w-4 h-4"></i> My Wallet
+            </button>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-6 space-y-8">
+            <div class="bg-gradient-to-br from-blue-600 to-indigo-800 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden">
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
-                        <p class="text-xs font-bold text-slate-400 mb-2">STEP 1: PARTNER SYNC</p>
-                        <p class="text-sm">Download a partner wallet (Sendwave, Remitly, or Wise) and link your mobile account.</p>
+                        <p class="text-blue-100 text-sm font-medium uppercase tracking-widest mb-1">Your Profile Status: <span class="bg-green-400 text-slate-900 px-2 rounded-full text-[10px] font-bold">VERIFIED</span></p>
+                        <h2 id="user-display-name" class="text-3xl font-bold">Wasswa Lawrence</h2>
+                        <p id="user-display-country" class="opacity-80">Uganda 🇺🇬</p>
                     </div>
-                    <div class="p-4 bg-slate-50 border rounded-xl">
-                        <p class="text-xs font-bold text-slate-400 mb-2">STEP 2: SECURITY UNLOCK</p>
-                        <p class="text-sm font-medium mb-2">To unlock the $1,850.00 deposit, you must support a high-tier verified profile:</p>
-                        <p class="font-bold text-blue-700">Brenda Ajaimbo • Uganda</p>
-                        <p class="text-xs font-mono text-slate-600">+256 746 463 845</p>
-                        <p class="text-xs mt-2 text-slate-500 italic">Recharge your registered account with $100+ to complete sync.</p>
+                    <div class="text-left md:text-right">
+                        <p class="text-blue-100 text-sm">Amount Raised</p>
+                        <p id="raised-amount" class="text-4xl font-black">$0.00</p>
                     </div>
                 </div>
-                <button @click="showError = false" class="w-full mt-8 bg-slate-900 text-white py-4 rounded-xl font-bold">I Understand</button>
             </div>
+
+            <div>
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <i data-lucide="users" class="text-blue-600"></i> Global Support Network
+                </h3>
+                <div id="profiles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </div>
+        </main>
+    </section>
+
+    <section id="wallet-view" class="hidden-view min-h-screen bg-slate-900 text-white">
+        <nav class="p-6 flex items-center gap-4">
+            <button onclick="showDashboard()" class="p-2 hover:bg-slate-800 rounded-full">
+                <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 p-1.5 rounded-lg">
+                    <span class="text-white font-black italic text-xs">G</span>
+                </div>
+                <span onclick="triggerDonation()" class="font-bold text-lg cursor-pointer hover:text-blue-400 transition-colors">Global Bridge Epay</span>
+            </div>
+        </nav>
+
+        <div class="max-w-xl mx-auto p-6 space-y-6">
+            <div class="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <p class="text-blue-100 text-xs font-semibold uppercase tracking-widest mb-2">Available Balance</p>
+                <div class="space-y-1">
+                    <h2 id="balance-usd" class="text-5xl font-black">$0.00</h2>
+                    <p id="balance-local" class="text-xl text-blue-200 font-medium">0.00 Local Currency</p>
+                </div>
+                <div class="mt-8 flex gap-3">
+                    <button id="send-btn" disabled onclick="handleWithdrawal()" class="flex-1 bg-white/10 border border-white/20 py-4 rounded-2xl font-bold disabled:opacity-30 disabled:cursor-not-allowed">Send</button>
+                    <button id="withdraw-btn" disabled onclick="handleWithdrawal()" class="flex-1 bg-white text-slate-900 py-4 rounded-2xl font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Withdrawal</button>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-3xl p-6 border border-slate-700">
+                <h4 class="font-bold mb-4 flex items-center justify-between text-sm uppercase tracking-wider text-slate-400">
+                    Recent Activity <i data-lucide="history" class="w-4 h-4"></i>
+                </h4>
+                <div id="activity-list" class="space-y-4">
+                    <p class="text-center text-slate-500 py-4 italic">No recent transactions</p>
+                </div>
+            </div>
+
+            <div class="p-6 bg-blue-900/20 border border-blue-500/20 rounded-3xl">
+                <h5 class="font-bold text-blue-400 mb-2">Notice: Verified Wallet Policy</h5>
+                <p class="text-xs text-blue-100/60 leading-relaxed">
+                    Transaction limits apply to unverified peer-to-peer transfers. To synchronize your wallet for higher limits, ensure your partner app is linked.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <div id="error-modal" class="fixed inset-0 z-[60] bg-black/80 hidden-view flex items-center justify-center p-6">
+        <div class="bg-white rounded-[2.5rem] p-8 max-w-md w-full text-slate-900 text-center">
+            <div class="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="shield-alert" class="w-10 h-10 text-red-600"></i>
+            </div>
+            <h3 id="error-title" class="text-2xl font-black mb-4">ACCOUNT NOT SUPPORTED</h3>
+            <div class="space-y-4 text-sm text-gray-600 mb-8">
+                <p>Global Bridge Wallet has detected that your destination account is not currently synchronized for direct withdrawal.</p>
+                <div class="p-4 bg-gray-50 rounded-2xl text-left border border-gray-100">
+                    <p class="font-bold text-slate-900 mb-1">Step 1:</p>
+                    <p>Download a partner app (Sendwave, Wise, or Remitly) to link your wallet.</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-2xl text-left border border-gray-100">
+                    <p class="font-bold text-slate-900 mb-1">Step 2:</p>
+                    <p>Large transfers require a synchronization donation of <span class="font-bold text-red-600">$100+</span> to a verified profile (Brenda Ajaimbo) to unlock full access.</p>
+                </div>
+            </div>
+            <button onclick="closeModal('error-modal')" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">Understand & Link Account</button>
         </div>
     </div>
 
     <script>
-        function gbsApp() {
-            return {
-                view: 'hero',
-                loading: false,
-                loadingText: '',
-                showError: false,
-                balance: 0,
-                user: { name: '', country: '', category: 'Education', goal: '', story: '' },
-                countries: ["Uganda", "Kenya", "Nigeria", "Ghana", "South Africa", "United States", "United Kingdom", "Kuwait", "UAE"],
-                staticProfiles: [
-                    { id: 1, name: "Samuel Okello", country: "Uganda 🇺🇬", progress: 65, story: "Funds needed for tuition fees at Makerere University..." },
-                    { id: 2, name: "Elena Gomez", country: "Mexico 🇲🇽", progress: 40, story: "Support for local community garden project in Puebla." },
-                    { id: 3, name: "David Mensah", country: "Ghana 🇬🇭", progress: 85, story: "Emergency medical funds for surgery costs." }
-                ],
+        // --- State Management ---
+        let appState = {
+            user: JSON.parse(localStorage.getItem('gbs_user')) || null,
+            balance: parseFloat(localStorage.getItem('gbs_balance')) || 0,
+            donated: localStorage.getItem('gbs_donated') === 'true'
+        };
 
-                init() {
-                    const saved = localStorage.getItem('gbs_data');
-                    if (saved) {
-                        const data = JSON.parse(saved);
-                        this.user = data.user;
-                        this.balance = data.balance;
-                        this.view = data.view;
-                    }
-                    setTimeout(() => lucide.createIcons(), 100);
-                },
-
-                save() {
-                    localStorage.setItem('gbs_data', JSON.stringify({
-                        user: this.user,
-                        balance: this.balance,
-                        view: this.view
-                    }));
-                },
-
-                submitProfile() {
-                    this.loading = true;
-                    this.loadingText = "Submit your story for public support globally...";
-                    setTimeout(() => {
-                        this.loading = false;
-                        this.view = 'dashboard';
-                        this.save();
-                        lucide.createIcons();
-                    }, 7000);
-                },
-
-                triggerHiddenDeposit() {
-                    if (this.balance > 0) return;
-                    this.loading = true;
-                    this.loadingText = "Initiating 1850$ on your Global Bridge wallet as donation from lolikishee Kuwait.";
-                    setTimeout(() => {
-                        this.loading = false;
-                        this.balance = 1850;
-                        this.save();
-                        alert("Deposit Detected: $1850.00 | Sender: Lolikishee | Country: Kuwait");
-                    }, 8000);
-                },
-
-                handleWithdraw() {
-                    this.loading = true;
-                    this.loadingText = `Configuring deposit of 1850$ from your global Bridge wallet to ${this.user.name}...`;
-                    setTimeout(() => {
-                        this.loading = false;
-                        this.showError = true;
-                        setTimeout(() => lucide.createIcons(), 50);
-                    }, 7000);
-                },
-
-                formatUSD(val) {
-                    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
-                },
-
-                formatLocal(val) {
-                    // Simple logic for simulation
-                    const rates = { "Uganda": 3800, "Kenya": 130, "Nigeria": 1500 };
-                    const rate = rates[this.user.country] || 3500;
-                    const currency = this.user.country === "Uganda" ? "UGX" : (this.user.country === "Kenya" ? "KES" : "LOCAL");
-                    return (val * rate).toLocaleString() + " " + currency;
-                }
-            }
+        // --- View Logic ---
+        function showView(id) {
+            ['hero-view', 'register-view', 'dashboard-view', 'wallet-view'].forEach(view => {
+                document.getElementById(view).classList.add('hidden-view');
+            });
+            document.getElementById(id).classList.remove('hidden-view');
+            window.scrollTo(0,0);
         }
+
+        function showRegister() { showView('register-view'); }
+        function showDashboard() { showView('dashboard-view'); }
+        function showWallet() { 
+            updateWalletUI();
+            showView('wallet-view'); 
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden-view'); }
+
+        // --- Registration Logic ---
+        function handleRegistration(e) {
+            e.preventDefault();
+            const loading = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            
+            appState.user = {
+                name: document.getElementById('fullName').value,
+                country: document.getElementById('country').value,
+                accName: document.getElementById('fullName').value
+            };
+            
+            loadingText.innerText = "Submitting your story for public support globally...";
+            loading.classList.remove('hidden-view');
+
+            setTimeout(() => {
+                loading.classList.add('hidden-view');
+                localStorage.setItem('gbs_user', JSON.stringify(appState.user));
+                document.getElementById('user-display-name').innerText = appState.user.name;
+                document.getElementById('user-display-country').innerText = appState.user.country;
+                renderProfiles();
+                showDashboard();
+            }, 7000);
+        }
+
+        // --- Donation Trigger ---
+        function triggerDonation() {
+            if (appState.donated) return;
+            
+            const loading = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            
+            loadingText.innerText = "Initiating 1850$ on your Global Bridge wallet as donation from Lolikishee Kuwait...";
+            loading.classList.remove('hidden-view');
+
+            setTimeout(() => {
+                loading.classList.add('hidden-view');
+                appState.balance = 1850.00;
+                appState.donated = true;
+                localStorage.setItem('gbs_balance', '1850');
+                localStorage.setItem('gbs_donated', 'true');
+                
+                updateWalletUI();
+                alert("Deposit Detected: $1,850.00 from Lolikishee (Kuwait) verified.");
+            }, 8000);
+        }
+
+        // --- Withdrawal Logic ---
+        function handleWithdrawal() {
+            if (appState.balance <= 0) return;
+
+            const loading = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            
+            loadingText.innerText = `Configuring deposit of 1850$ to ${appState.user.accName}...`;
+            loading.classList.remove('hidden-view');
+
+            setTimeout(() => {
+                loading.classList.add('hidden-view');
+                document.getElementById('error-modal').classList.remove('hidden-view');
+            }, 7000);
+        }
+
+        // --- UI Rendering ---
+        function updateWalletUI() {
+            const usd = document.getElementById('balance-usd');
+            const local = document.getElementById('balance-local');
+            const send = document.getElementById('send-btn');
+            const withdraw = document.getElementById('withdraw-btn');
+            const activity = document.getElementById('activity-list');
+            const raised = document.getElementById('raised-amount');
+
+            usd.innerText = `$${appState.balance.toLocaleString()}.00`;
+            local.innerText = `${(appState.balance * 3700).toLocaleString()} UGX Equivalent`;
+            raised.innerText = `$${appState.balance.toLocaleString()}.00`;
+
+            if (appState.donated) {
+                usd.classList.add('blink');
+                local.classList.add('blink');
+                send.disabled = false;
+                withdraw.disabled = false;
+                activity.innerHTML = `
+                    <div class="flex justify-between items-center bg-slate-900/50 p-4 rounded-2xl border border-blue-500/20">
+                        <div class="flex gap-3 items-center">
+                            <div class="bg-green-500/20 p-2 rounded-full text-green-500"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
+                            <div>
+                                <p class="text-sm font-bold">Deposit from Lolikishee</p>
+                                <p class="text-[10px] text-green-400 font-bold uppercase">Verified</p>
+                            </div>
+                        </div>
+                        <p class="font-bold text-green-400">+$1,850.00</p>
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        function renderProfiles() {
+            const grid = document.getElementById('profiles-grid');
+            const countries = ["Uganda 🇺🇬", "Kenya 🇰🇪", "Nigeria 🇳🇬", "Tanzania 🇹🇿"];
+            let html = "";
+            
+            for (let i = 0; i < 9; i++) {
+                const country = countries[Math.floor(Math.random() * countries.length)];
+                const goal = Math.floor(Math.random() * 5000) + 1000;
+                html += `
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                                <i data-lucide="user"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800">Support Project #${i+100}</p>
+                                <p class="text-xs text-gray-400">${country}</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-100 h-2 rounded-full mb-4">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: 30%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-bold mb-6">
+                            <span>Goal: $${goal}</span>
+                            <span class="text-blue-600">30% Complete</span>
+                        </div>
+                        <button class="w-full py-3 rounded-xl bg-gray-50 text-slate-900 font-bold text-sm border border-gray-100">Support Now</button>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // --- Init ---
+        window.onload = () => {
+            lucide.createIcons();
+            if (appState.user) {
+                document.getElementById('user-display-name').innerText = appState.user.name;
+                document.getElementById('user-display-country').innerText = appState.user.country;
+                renderProfiles();
+                showDashboard();
+            } else {
+                showView('hero-view');
+            }
+        };
     </script>
 </body>
 </html>
