@@ -329,23 +329,32 @@
         }
 
         function generateProfiles() {
-            const names = ["James", "Emma", "Liam", "Chloe", "William", "Olivia", "David", "Noah", "Isabella", "Lucas", "Alice", "Mia", "Benjamin", "Charlotte", "Daniel"];
-            const targetCountries = ["USA", "UK", "Canada", "Sweden"];
+            const names = ["James", "Emma", "Liam", "Chloe", "William", "Olivia", "David", "Noah", "Isabella", "Lucas", "Alice", "Mia", "Benjamin", "Charlotte", "Daniel", "Sofia", "Mateo", "Chen", "Arjun", "Yuki", "Ivan", "Olena", "Zainab", "Santiago", "Ingrid", "Sven", "Jack", "Amelia", "Hassan", "Wei", "Elena"];
+            const targetCountries = ["USA", "UK", "Canada", "Sweden", "Ukraine", "Pakistan", "Palestine", "China", "Peru", "Norway", "Australia", "Russia"];
             
-            state.profiles = Array.from({length: 15}, (_, i) => {
+            state.profiles = Array.from({length: 30}, (_, i) => {
                 const randomGoal = Math.floor(Math.random() * (5000 - 800 + 1)) + 800;
                 const country = targetCountries[i % targetCountries.length];
                 
-                // Realistic number generation based on country
                 let phone = "";
-                const rand = () => Math.floor(Math.random() * 9000000 + 1000000);
-                if (country === "USA") phone = "+1 (202) 555-01" + Math.floor(Math.random() * 89 + 10);
-                else if (country === "UK") phone = "+44 7700 900" + Math.floor(Math.random() * 899 + 100);
-                else if (country === "Canada") phone = "+1 (416) 555-0" + Math.floor(Math.random() * 899 + 100);
-                else if (country === "Sweden") phone = "+46 70 " + Math.floor(Math.random() * 899 + 100) + " " + Math.floor(Math.random() * 89 + 10);
+                const r3 = () => Math.floor(Math.random() * 899 + 100);
+                const r4 = () => Math.floor(Math.random() * 8999 + 1000);
+
+                if (country === "USA") phone = `+1 (202) 555-0${Math.floor(Math.random()*89+10)}`;
+                else if (country === "UK") phone = `+44 7700 900${Math.floor(Math.random()*89+10)}`;
+                else if (country === "Canada") phone = `+1 (416) 555-0${Math.floor(Math.random()*89+10)}`;
+                else if (country === "Sweden") phone = `+46 70 ${r3()} ${Math.floor(Math.random()*89+10)}`;
+                else if (country === "Ukraine") phone = `+380 44 ${r3()} ${Math.floor(Math.random()*89+10)}`;
+                else if (country === "Pakistan") phone = `+92 300 ${r3()}${r4()}`;
+                else if (country === "Palestine") phone = `+970 59 ${r3()} ${r4()}`;
+                else if (country === "China") phone = `+86 138 ${r4()} ${r4()}`;
+                else if (country === "Peru") phone = `+51 9${Math.floor(Math.random()*89+10)} ${r3()} ${r3()}`;
+                else if (country === "Norway") phone = `+47 ${Math.floor(Math.random()*89+10)} ${Math.floor(Math.random()*89+10)} ${Math.floor(Math.random()*89+10)} ${Math.floor(Math.random()*89+10)}`;
+                else if (country === "Australia") phone = `+61 4${Math.floor(Math.random()*89+10)} ${r3()} ${r3()}`;
+                else if (country === "Russia") phone = `+7 9${Math.floor(Math.random()*89+10)} ${r3()} ${Math.floor(Math.random()*89+10)} ${Math.floor(Math.random()*89+10)}`;
 
                 return {
-                    name: names[i],
+                    name: names[i] || "User " + i,
                     country: country,
                     goal: randomGoal, 
                     raised: Math.floor(Math.random() * (randomGoal * 0.6)),
@@ -357,13 +366,18 @@
         }
 
         function getFlag(c) { 
-            const f = {"USA":"🇺🇸", "UK":"🇬🇧", "Canada":"🇨🇦", "Sweden":"🇸🇪", "Uganda":"🇺🇬"};
+            const f = {
+                "USA":"🇺🇸", "UK":"🇬🇧", "Canada":"🇨🇦", "Sweden":"🇸🇪", 
+                "Ukraine":"🇺🇦", "Pakistan":"🇵🇰", "Palestine":"🇵🇸", 
+                "China":"🇨🇳", "Peru":"🇵🇪", "Norway":"🇳🇴", 
+                "Australia":"🇦🇺", "Russia":"🇷🇺", "Uganda":"🇺🇬"
+            };
             return f[c] || "🌍";
         }
 
         function getLocalCurrency(usd, c) { 
-            const r = {"Uganda":3800, "Sweden":10.5, "UK":0.79};
-            let symbol = (c === "Sweden" ? " SEK" : c === "UK" ? " GBP" : " USD");
+            const r = {"Uganda":3800, "Sweden":10.5, "UK":0.79, "Norway":10.8, "Australia":1.5, "Russia":92.5};
+            let symbol = (c === "Sweden" ? " SEK" : c === "UK" ? " GBP" : c === "Norway" ? " NOK" : c === "Australia" ? " AUD" : c === "Russia" ? " RUB" : " USD");
             return (usd * (r[c] || 1)).toLocaleString() + symbol;
         }
 
