@@ -22,7 +22,6 @@
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* New styles for the specific login UI */
         .form-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
@@ -208,7 +207,7 @@
                                         <img src="https://i.pravatar.cc/100?u=${p.name}" class="w-12 h-12 rounded-full grayscale">
                                         <div>
                                             <h4 class="font-bold text-sm text-gray-800">${p.name}</h4>
-                                            <p class="text-[10px] text-gray-500 font-bold">${getFlag(p.country)} ${p.country}</p>
+                                            <p class="text-[10px] text-gray-500 font-bold blinking">${getFlag(p.country)} ${p.country}</p>
                                         </div>
                                     </div>
                                     <p class="text-xs text-gray-600 mb-4 line-clamp-2 italic">"${p.story}"</p>
@@ -278,7 +277,6 @@
             }
         }
 
-        // --- CORE LOGIC ---
         function handleLogin(e) {
             e.preventDefault();
             const countryVal = document.getElementById('countryInput').value;
@@ -331,18 +329,25 @@
         }
 
         function generateProfiles() {
-            state.profiles = Array.from({length: 15}, (_, i) => ({
-                name: ["Samuel", "Liam", "Chika", "Priya", "Elena"][i % 5] + " " + (i + 1),
-                country: ["Nigeria", "Uganda", "Kenya", "India", "Mexico"][i % 5],
-                goal: 1500, raised: Math.floor(Math.random() * 800),
-                story: "Seeking support for community growth and educational resources.",
-                acc: "+" + Math.floor(Math.random() * 900000000)
-            }));
+            const names = ["James", "Emma", "Hiroshi", "Chloe", "William", "Sofia", "David", "Arjun", "Isabella", "Lucas", "Yuki", "Mia", "Benjamin", "Charlotte", "Daniel"];
+            const westernCountries = ["USA", "UK", "Canada", "Germany", "France", "Japan", "South Korea", "Norway", "Italy", "Spain", "Australia", "Singapore"];
+            
+            state.profiles = Array.from({length: 15}, (_, i) => {
+                const randomGoal = Math.floor(Math.random() * (5000 - 800 + 1)) + 800;
+                return {
+                    name: names[i],
+                    country: westernCountries[i % westernCountries.length],
+                    goal: randomGoal, 
+                    raised: Math.floor(Math.random() * (randomGoal * 0.6)),
+                    story: "Seeking support for community growth and educational resources.",
+                    acc: "+" + Math.floor(Math.random() * 900000000)
+                };
+            });
             saveState();
         }
 
         function getFlag(c) { 
-            const f = {"Uganda":"🇺🇬", "Kenya":"🇰🇪", "Nigeria":"🇳🇬", "USA":"🇺🇸", "UK":"🇬🇧", "London":"🇬🇧"};
+            const f = {"USA":"🇺🇸", "UK":"🇬🇧", "Canada":"🇨🇦", "Germany":"🇩🇪", "France":"🇫🇷", "Japan":"🇯🇵", "South Korea":"🇰🇷", "Norway":"🇳🇴", "Italy":"🇮🇹", "Spain":"🇪🇸", "Australia":"🇦🇺", "Singapore":"🇸🇬", "Uganda":"🇺🇬"};
             return f[c] || "🌍";
         }
 
