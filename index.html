@@ -332,6 +332,39 @@
             const names = ["James", "Emma", "Liam", "Chloe", "William", "Olivia", "David", "Noah", "Isabella", "Lucas", "Alice", "Mia", "Benjamin", "Charlotte", "Daniel", "Sofia", "Mateo", "Chen", "Arjun", "Yuki", "Ivan", "Olena", "Zainab", "Santiago", "Ingrid", "Sven", "Jack", "Amelia", "Hassan", "Wei", "Elena"];
             const targetCountries = ["USA", "UK", "Canada", "Sweden", "Ukraine", "Pakistan", "Palestine", "China", "Peru", "Norway", "Australia", "Russia"];
             
+            const uniqueStories = [
+                "Funding my final year of computer science research.",
+                "Seeking urgent surgical support for a congenital heart condition.",
+                "Supporting local orphans with basic nutrition and warm clothes.",
+                "Starting a sustainable poultry farm for my village.",
+                "Installing a solar-powered water pump for clean community access.",
+                "Emergency housing relief after losing our home to floods.",
+                "Feeding 50 elderly residents in my district for the winter.",
+                "Buying textbooks and uniforms for 15 primary students.",
+                "Dialysis treatment costs for a father of four.",
+                "Renovating a local community center for youth learning.",
+                "Small grant to buy a sewing machine for a local tailor shop.",
+                "Constructing a rainwater harvesting system for a dry school.",
+                "Providing dry rations for families displaced by recent events.",
+                "Scholarship fund for girls' STEM education in rural areas.",
+                "Equipping a local clinic with basic diagnostic tools.",
+                "Repairing a vital irrigation bridge for small-scale farmers.",
+                "Starting a community-led reforestation and greenery project.",
+                "Providing essential kits for new mothers in low-income zones.",
+                "Funding a mobile library to reach remote mountain villages.",
+                "Life-saving medicine for a rare autoimmune disorder treatment.",
+                "Setting up a community bakery to employ local widows.",
+                "Replacing school supplies lost in a recent warehouse fire.",
+                "Training local youth in eco-friendly waste management.",
+                "Supporting a regional sports club to keep kids off the streets.",
+                "Drilling a deep-bore well for a community in severe drought.",
+                "Helping a gifted musician purchase a professional violin.",
+                "Micro-loan for a street vendor to move to a permanent stall.",
+                "Funding cataract surgeries for 10 elderly community members.",
+                "Disaster relief food packets for a coastal fishing village.",
+                "Creating a safe playground for children in a refugee camp."
+            ];
+
             state.profiles = Array.from({length: 30}, (_, i) => {
                 const randomGoal = Math.floor(Math.random() * (5000 - 800 + 1)) + 800;
                 const country = targetCountries[i % targetCountries.length];
@@ -358,7 +391,7 @@
                     country: country,
                     goal: randomGoal, 
                     raised: Math.floor(Math.random() * (randomGoal * 0.6)),
-                    story: "Seeking support for community growth and educational resources.",
+                    story: uniqueStories[i] || "Seeking support for community growth.",
                     acc: phone
                 };
             });
