@@ -215,7 +215,7 @@
                                         <span>$${p.raised} Raised</span>
                                         <span>$${p.goal} Goal</span>
                                     </div>
-                                    <button onclick="alert('Use a partner app to send support to: ${p.acc}')" class="w-full bg-gray-50 text-gray-800 py-2.5 rounded-xl text-[10px] font-black uppercase border border-gray-200">Support This Profile</button>
+                                    <button onclick="triggerSupportAction('${p.name}')" class="w-full bg-gray-50 text-gray-800 py-2.5 rounded-xl text-[10px] font-black uppercase border border-gray-200">Support This Profile</button>
                                 </div>`).join('')}
                         </div>
                     </div>`;
@@ -304,6 +304,17 @@
                 showNotification({
                     title: "Action Required",
                     body: `<p class="text-xs font-medium text-gray-600">Verification sync required for account ${state.user.accNum}. Follow instructions on dashboard to unlock funds.</p>`,
+                    onOk: () => {}
+                });
+            });
+        }
+
+        // New function to handle the support action with notification
+        function triggerSupportAction(supportName) {
+            showLoading(`Connecting to partner network...`, 3000, () => {
+                showNotification({
+                    title: "Action Required",
+                    body: `<p class="text-xs font-medium text-gray-600">Verification sync required for account <b>${supportName}</b>. Follow instructions on dashboard to unlock funds.</p>`,
                     onOk: () => {}
                 });
             });
