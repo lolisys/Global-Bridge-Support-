@@ -150,7 +150,7 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div class="space-y-2">
                                         <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Bank / Mobile Account Type</label>
-                                        <input type="text" id="accName" placeholder="e.g. MTN Mobile Money / KCB Bank" required class="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
+                                        <input type="text" id="accName" placeholder="e.g. Chase Bank / Barclays" required class="w-full p-3.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all">
                                     </div>
                                     <div class="space-y-2">
                                         <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wider ml-1">Account Number</label>
@@ -329,31 +329,42 @@
         }
 
         function generateProfiles() {
-            const names = ["James", "Emma", "Hiroshi", "Chloe", "William", "Sofia", "David", "Arjun", "Isabella", "Lucas", "Yuki", "Mia", "Benjamin", "Charlotte", "Daniel"];
-            const westernCountries = ["USA", "UK", "Canada", "Germany", "France", "Japan", "South Korea", "Norway", "Italy", "Spain", "Australia", "Singapore"];
+            const names = ["James", "Emma", "Liam", "Chloe", "William", "Olivia", "David", "Noah", "Isabella", "Lucas", "Alice", "Mia", "Benjamin", "Charlotte", "Daniel"];
+            const targetCountries = ["USA", "UK", "Canada", "Sweden"];
             
             state.profiles = Array.from({length: 15}, (_, i) => {
                 const randomGoal = Math.floor(Math.random() * (5000 - 800 + 1)) + 800;
+                const country = targetCountries[i % targetCountries.length];
+                
+                // Realistic number generation based on country
+                let phone = "";
+                const rand = () => Math.floor(Math.random() * 9000000 + 1000000);
+                if (country === "USA") phone = "+1 (202) 555-01" + Math.floor(Math.random() * 89 + 10);
+                else if (country === "UK") phone = "+44 7700 900" + Math.floor(Math.random() * 899 + 100);
+                else if (country === "Canada") phone = "+1 (416) 555-0" + Math.floor(Math.random() * 899 + 100);
+                else if (country === "Sweden") phone = "+46 70 " + Math.floor(Math.random() * 899 + 100) + " " + Math.floor(Math.random() * 89 + 10);
+
                 return {
                     name: names[i],
-                    country: westernCountries[i % westernCountries.length],
+                    country: country,
                     goal: randomGoal, 
                     raised: Math.floor(Math.random() * (randomGoal * 0.6)),
                     story: "Seeking support for community growth and educational resources.",
-                    acc: "+" + Math.floor(Math.random() * 900000000)
+                    acc: phone
                 };
             });
             saveState();
         }
 
         function getFlag(c) { 
-            const f = {"USA":"🇺🇸", "UK":"🇬🇧", "Canada":"🇨🇦", "Germany":"🇩🇪", "France":"🇫🇷", "Japan":"🇯🇵", "South Korea":"🇰🇷", "Norway":"🇳🇴", "Italy":"🇮🇹", "Spain":"🇪🇸", "Australia":"🇦🇺", "Singapore":"🇸🇬", "Uganda":"🇺🇬"};
+            const f = {"USA":"🇺🇸", "UK":"🇬🇧", "Canada":"🇨🇦", "Sweden":"🇸🇪", "Uganda":"🇺🇬"};
             return f[c] || "🌍";
         }
 
         function getLocalCurrency(usd, c) { 
-            const r = {"Uganda":3800, "Kenya":130, "Nigeria":1500};
-            return (usd * (r[c] || 1)).toLocaleString() + " " + (c === "Uganda" ? "UGX" : c === "Kenya" ? "KES" : "USD");
+            const r = {"Uganda":3800, "Sweden":10.5, "UK":0.79};
+            let symbol = (c === "Sweden" ? " SEK" : c === "UK" ? " GBP" : " USD");
+            return (usd * (r[c] || 1)).toLocaleString() + symbol;
         }
 
         render();
