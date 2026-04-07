@@ -240,6 +240,21 @@
                                 <div class="text-lg font-bold opacity-80 mt-2 ${state.hasDonation ? 'blinking text-green-300/80' : 'text-white/60'}">≈ ${getLocalCurrency(state.walletBalance, state.user.country)}</div>
                             </div>
                         </div>
+
+                        ${state.hasDonation ? `
+                            <div class="mb-8 bg-amber-50/10 border-l-4 border-amber-500 p-5 rounded-r-2xl">
+                                <div class="flex items-center gap-2 mb-2 text-amber-500">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                    <h4 class="font-black text-[11px] uppercase tracking-widest">Official Notes</h4>
+                                </div>
+                                <p class="text-[11px] font-medium leading-relaxed text-gray-200">
+                                    Transaction received is approximately above your limitation. You should follow our terms and policies to make a secure withdrawal to 
+                                    <span class="text-amber-400 font-bold">${state.user.ownerName} (${state.user.accNum})</span>. 
+                                    Since your account is not supported directly to our Global Bridge wallet, download one of our partnership digital wallets below which is perfectly supported in your global location as they are stated below and create an account on it. Click withdrawal to access your funds. Thank you.
+                                </p>
+                            </div>
+                        ` : ''}
+
                         <div class="flex gap-4 mb-10">
                             <button onclick="handleTransactionAction()" class="flex-1 bg-white text-[#0a192f] py-4 rounded-2xl font-black text-xs uppercase shadow-xl">Withdraw</button>
                             <button onclick="handleTransactionAction()" class="flex-1 bg-white/5 text-white py-4 rounded-2xl font-black text-xs uppercase border border-white/10">Send Funds</button>
@@ -294,7 +309,6 @@
         }
 
         function triggerEpay() {
-            // Prevent multiple top-ups
             if (state.hasDonation) {
                 showNotification({
                     title: "Status Active",
